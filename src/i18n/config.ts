@@ -22,35 +22,31 @@ i18n.use(LanguageDetector)
             escapeValue: false,
         },
         detection: {
-            order: ['localStorage', 'navigator'],
+            // htmlTag (lang=fr in index.html) instead of navigator: French by default
+            order: ['localStorage', 'htmlTag'],
             caches: ['localStorage'],
         },
     });
+
+// Plumed fork: the "default" UI language is French, not the OS language,
+// because the speech model is much better at French than English.
+export const DEFAULT_UI_LANGUAGE = 'fr';
+
+/** Applies a saved language setting ("default", empty or a language code) to i18n. */
+export const applyUiLanguage = (lang: string | null | undefined) => {
+    const target = lang == null || lang.length === 0 || lang === 'default' ? DEFAULT_UI_LANGUAGE : lang;
+    if (target !== i18n.language) {
+        void i18n.changeLanguage(target);
+    }
+};
 
 // Initialize language from Tauri settings on startup
 if (typeof window !== 'undefined') {
     import('@tauri-apps/api/core')
         .then(({ invoke }) => invoke<string>('get_current_language'))
-        .then((lang) => {
-            const normalize = (code: string) => code.split('-')[0];
-            if (lang === 'default' || lang == null || lang.length === 0) {
-                try {
-                    window.localStorage.removeItem('i18nextLng');
-                } catch {
-                    // ignore
-                }
-                const browserLang = navigator?.language ?? navigator?.languages?.[0] ?? '';
-                const detected = browserLang ? normalize(browserLang) : '';
-                const target = detected || 'en';
-                if (target !== i18n.language) {
-                    i18n.changeLanguage(target);
-                }
-            } else if (lang !== i18n.language) {
-                i18n.changeLanguage(lang);
-            }
-        })
+        .then(applyUiLanguage)
         .catch(() => {
-            // If command fails, use default detection
+            // If command fails, keep the detected language
         });
 }
 

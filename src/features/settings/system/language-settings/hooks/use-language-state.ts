@@ -1,41 +1,15 @@
 import { invoke } from '@tauri-apps/api/core';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { useTranslation, i18n } from '@/i18n';
-
-const SUPPORTED_LANGUAGES = [
-    { code: 'en', label: 'English' },
-    { code: 'fr', label: 'Français' },
-];
+import { useTranslation, applyUiLanguage } from '@/i18n';
 
 export const useLanguageState = () => {
     const [currentLang, setCurrentLang] = useState<string>('default');
     const { t } = useTranslation();
 
     const applyLanguage = (lang: string) => {
-        if (lang === 'default') {
-            try {
-                window.localStorage.removeItem('i18nextLng');
-            } catch {
-                /* localStorage may be unavailable */
-            }
-            const normalize = (code: string) => code.split('-')[0];
-            const browserLang = navigator?.language ?? navigator?.languages?.[0] ?? '';
-            const detected = browserLang ? normalize(browserLang) : '';
-            console.log('detected', detected);
-            let target = 'en';
-            if (SUPPORTED_LANGUAGES.some((lang) => lang.code === detected)) {
-                target = detected;
-                console.log('target', target);
-            }
-            if (target !== i18n.language) {
-                i18n.changeLanguage(target);
-            }
-            setCurrentLang('default');
-        } else {
-            i18n.changeLanguage(lang);
-            setCurrentLang(lang);
-        }
+        applyUiLanguage(lang);
+        setCurrentLang(lang.length > 0 ? lang : 'default');
     };
 
     useEffect(() => {
