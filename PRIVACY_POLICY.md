@@ -1,17 +1,17 @@
-# Privacy Policy (Murmure)
+# Privacy Policy (Plumed)
 
-**Last updated:** March 16, 2026
+**Last updated:** November 14, 2026
 
-Murmure is a privacy-first, open-source speech-to-text desktop application. It is designed to work without an internet connection and to keep your speech data on your device.
+Plumed is a privacy-first, open-source speech-to-text desktop application. It is designed to work without an internet connection and to keep your speech data on your device.
 
 ## Summary
 
-- Murmure does **not** include analytics or telemetry.
+- Plumed does **not** include analytics or telemetry.
 - Your audio and transcriptions are processed **locally** on your device.
-- Murmure stores only what it needs to operate (settings, custom words/rules). No transcription is written to disk by default.
-- On startup, Murmure checks for updates by contacting the configured updater endpoint (currently hosted on GitHub). Downloading updates is opt-in.
+- Plumed stores only what it needs to operate (settings, custom words/rules). No transcription is written to disk by default.
+- On startup, Plumed checks for updates by contacting the configured updater endpoint (currently hosted on GitHub). Downloading updates is opt-in.
 
-## What Murmure does not do
+## What Plumed does not do
 
 - It does not collect or sell user data.
 - It does not upload your recordings or transcriptions to a cloud service by default.
@@ -19,11 +19,12 @@ Murmure is a privacy-first, open-source speech-to-text desktop application. It i
 
 ## Data stored on your device
 
-Murmure stores the following locally in the app's data directory:
+Plumed stores the following locally in the app's data directory:
 
 - **Settings** (shortcuts, display settings, language)
 - **Custom dictionary words**
 - **Formatting rules**
+- **Medical rules** (`medical_rules.json`, your edits to the drug and medical term corrections)
 - **Application logs** (do not contain transcriptions by default)
 
 By default, **no transcription is persisted to disk**. Transcription history is kept in memory only and is cleared when the application closes. If you explicitly enable the "Persist history" option, the last 5 transcriptions will be saved on disk in the app's data directory.
@@ -32,15 +33,19 @@ This local data is not transmitted by default.
 
 ## Voice mode
 
-Voice mode allows Murmure to listen for a wake word to start recording hands-free. This feature is **disabled by default** and must be explicitly enabled by the user.
+Voice mode allows Plumed to listen for a wake word to start recording hands-free. This feature is **disabled by default** and must be explicitly enabled by the user.
 
-When enabled, voice mode maintains a continuous audio stream from your microphone to detect speech. Only detected speech segments are transcribed locally to check for wake word matches. The raw audio is **immediately discarded** after processing. All processing happens on-device — no audio or transcription data leaves your computer.
+When enabled, voice mode maintains a continuous audio stream from your microphone to detect speech. Only detected speech segments are transcribed locally to check for wake word matches. The raw audio is **immediately discarded** after processing. All processing happens on-device: no audio or transcription data leaves your computer.
 
-When disabled (default), Murmure does not listen to your microphone outside of an active recording session.
+When disabled (default), Plumed does not listen to your microphone outside of an active recording session.
+
+## Smart Mic
+
+Smart Mic lets a phone on the same local network act as a microphone. It is **disabled by default**. When enabled, audio travels from the phone to this computer over the local network only. If you configure a relay URL, audio transits through that relay server: use only a relay you host yourself for medical dictation.
 
 ## Settings import/export
 
-Murmure allows exporting and importing settings as `.murmure` files. These files may contain: system settings, shortcuts, formatting rules, and dictionary words.
+Plumed allows exporting and importing settings as `.murmure` files. These files may contain: system settings, shortcuts, formatting rules, and dictionary words.
 
 ## Network usage
 
@@ -48,7 +53,7 @@ Murmure allows exporting and importing settings as `.murmure` files. These files
 
 When you use network-related features, standard network metadata (such as your IP address) will necessarily be visible to the service you contact.
 
-Murmure may access the network only for:
+Plumed may access the network only for:
 
 - **Checking for updates** (runs automatically on launch; currently not disableable in-app)
 - **Downloading and installing updates** (only when you choose to install an update)
@@ -59,13 +64,13 @@ Third-party policy (GitHub): [GitHub Privacy Statement](https://docs.github.com/
 
 ## Clipboard access
 
-To insert transcriptions into other applications, Murmure may:
+To insert transcriptions into other applications, Plumed may:
 
 - temporarily write the transcription to the system clipboard,
 - simulate a paste action,
 - restore the previous clipboard content unless you enabled an option to keep the transcription in the clipboard.
 
-Clipboard content is not transmitted by Murmure.
+Clipboard content is not transmitted by Plumed.
 
 ## Security practices
 
@@ -73,9 +78,11 @@ We use static analysis tools such as **SonarQube** to help detect potential vuln
 
 ## Open source
 
-Murmure is released under the GNU AGPL v3 License. The source code can be audited by anyone:
+Plumed is released under the GNU AGPL v3 License. The source code can be audited by anyone:
 
-[https://github.com/Kieirra/murmure](https://github.com/Kieirra/murmure)
+[https://github.com/PlumedOrg/Plumed](https://github.com/PlumedOrg/Plumed)
+
+Plumed is a fork of [Murmure](https://www.murmure.app/) (source: [Kieirra/murmure](https://github.com/Kieirra/murmure)), whose privacy policy this document is based on.
 
 ## Disclaimer of warranty (legal)
 
