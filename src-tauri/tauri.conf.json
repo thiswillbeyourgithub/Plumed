@@ -97,7 +97,7 @@
         "updater": {
             "active": true,
             "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEMxRjkyMDA1QjRGOTUwNTAKUldSUVVQbTBCU0Q1d2ZrNzIvYTZ3T2Q3WEt2R3I2WjRxQ3lFWk9XbzNWbmN3RXI0c210R2oweHkK",
-            "endpoints": ["https://github.com/thiswillbeyourgithub/Plumed/releases/latest/download/latest.json"],
+            "endpoints": ["https://github.com/PlumedOrg/Plumed/releases/latest/download/latest.json"],
             "windows": {
                 "installMode": "passive"
             }

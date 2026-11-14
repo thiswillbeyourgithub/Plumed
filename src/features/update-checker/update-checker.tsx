@@ -4,6 +4,7 @@ import { check } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
 import { RefreshCcw, Download } from 'lucide-react';
 import { useTranslation } from '@/i18n';
+import { PLUMED_LATEST_RELEASE_URL } from '@/utils/plumed-links';
 
 type UpdateCheckerProps = {
     className?: string;
@@ -130,7 +131,7 @@ export const UpdateChecker = ({ className = '' }: UpdateCheckerProps) => {
     if (isPacmanManaged && updateAvailable && !isInstalling) {
         return (
             <a
-                href="https://github.com/Kieirra/murmure/releases/latest"
+                href={PLUMED_LATEST_RELEASE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`text-xs transition-colors flex items-center gap-1.5 px-2 py-1 rounded cursor-pointer text-sky-500 hover:text-sky-400 hover:bg-sky-500/10 ${className}`}
