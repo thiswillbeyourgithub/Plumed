@@ -12,8 +12,6 @@ const applySettings = async (categories: ExportedCategories): Promise<void> => {
     await invoke('set_record_mode', { mode: settings.record_mode });
     await invoke('set_overlay_mode', { mode: settings.overlay_mode });
     await invoke('set_overlay_position', { position: settings.overlay_position });
-    await invoke('set_api_enabled', { enabled: settings.api_enabled });
-    await invoke('set_api_port', { port: settings.api_port });
     await invoke('set_copy_to_clipboard', { enabled: settings.copy_to_clipboard });
     await invoke('set_paste_method', { method: settings.paste_method });
     if (settings.auto_insert != null) {

@@ -8,7 +8,6 @@ mod dictionary;
 mod engine;
 mod formatting_rules;
 mod history;
-mod http_api;
 mod llm;
 mod medical;
 mod model;
@@ -29,7 +28,6 @@ use audio::preload_engine;
 use audio::types::AudioState;
 use commands::*;
 use dictionary::Dictionary;
-use http_api::HttpApiState;
 use llm::is_transform_processing;
 use log::{error, info, warn};
 use model::Model;
@@ -307,7 +305,6 @@ pub fn run() {
                 return Ok(());
             }
 
-            app.manage(HttpApiState::new());
             app.manage(SmartMicState::new());
             app.manage(utils::enigo_session::EnigoState::default());
 
@@ -358,17 +355,6 @@ pub fn run() {
             audio::output_volume::restore_pending(app.handle());
 
             audio::microphone::init_mic_cache_if_needed(app.handle(), s.mic_id.clone());
-
-            if s.api_enabled {
-                let app_handle = app.handle().clone();
-                let state = app_handle.state::<HttpApiState>().inner().clone();
-                if let Err(e) =
-                    crate::http_api::spawn_http_api_thread(app_handle.clone(), s.api_port, state)
-                {
-                    warn!("HTTP API not started at boot: {}", e);
-                    crate::http_api::notify_start_error_dialog(&app_handle, &e);
-                }
-            }
 
             if s.smartmic_enabled {
                 if crate::utils::platform::is_wayland_session() {
@@ -473,13 +459,6 @@ pub fn run() {
             resume_transcription,
             start_shortcut_capture,
             stop_shortcut_capture,
-            get_api_enabled,
-            set_api_enabled,
-            get_api_port,
-            set_api_port,
-            start_http_api_server,
-            stop_http_api_server,
-            get_http_api_status,
             set_copy_to_clipboard,
             set_auto_insert,
             set_paste_method,

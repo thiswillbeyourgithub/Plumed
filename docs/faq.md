@@ -44,10 +44,6 @@ This is almost always a microphone quality issue. Poor audio, background noise, 
 
 Meeting transcription with speaker diarization (identifying who said what) is not currently supported. Murmure is designed for single-speaker dictation.
 
-### Can Murmure transcribe audio files?
-
-Yes, via the [Local API](features/api.md). Send a WAV file to the API endpoint and get the transcription back.
-
 ## Installation
 
 ### Where are the logs?

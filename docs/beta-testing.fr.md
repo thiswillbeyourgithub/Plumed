@@ -29,7 +29,6 @@ Faites ce que vous pouvez, même une seule case nous aide. Commencez par les qua
 - [ ] Sur les pages des extensions que vous utilisez, désactivez puis réactivez l'extension avec l'interrupteur à côté du titre, redémarrez Murmure et vérifiez qu'elle est restée comme vous l'avez laissée
 - [ ] Dans Personnaliser > Dictionnaire, supprimez un mot, cliquez sur **Annuler**, et vérifiez que le mot revient
 - [ ] Si vous utilisez le Mode Prompt ou le Mode Commande, activez le Mode Commande, appuyez sur le raccourci Commande sans rien sélectionner et posez une question. Sélectionnez ensuite une phrase et dites « traduis en anglais »
-- [ ] Ouvrez Extensions > API locale, activez-la, et utilisez **Essayer** avec un court fichier WAV
 - [ ] Dictez un texte long, plus d'une minute, et vérifiez qu'il ne manque rien à la fin
 - [ ] Ouvrez le menu de la barre système et vérifiez qu'il est dans votre langue
 
@@ -81,12 +80,6 @@ Merci pour votre contribution !
 - LLM Connect s'appelle maintenant Mode Prompt
 - Le Mode Commande devient une extension à part, avec son propre modèle. Activez-le dans Extensions > Mode Commande
 - Sans sélection, une commande répond maintenant à votre question au lieu de la répéter
-
-### API locale
-
-- L'API locale n'est plus expérimentale. Elle a sa propre page dans Extensions > API locale
-- De nouveaux endpoints appliquent un prompt du Mode Prompt à la transcription et renvoient le texte final
-- Chaque endpoint a un bouton **Essayer** pour le tester avec un fichier WAV, sans écrire de code
 
 ### Divers
 

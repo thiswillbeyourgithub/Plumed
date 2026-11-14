@@ -2,8 +2,6 @@ export interface SystemSettings {
     record_mode: string;
     overlay_mode: string;
     overlay_position: string;
-    api_enabled: boolean;
-    api_port: number;
     copy_to_clipboard: boolean;
     paste_method: string;
     auto_insert: boolean;

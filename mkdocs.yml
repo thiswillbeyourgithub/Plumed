@@ -84,7 +84,6 @@ nav:
                 - Prompt Mode: features/llm-connect.md
                 - Voice Mode: features/voice-mode.md
                 - Smart Speech Mic: features/smart-speech-mic.md
-                - Local API: features/api.md
           - Commands: features/commands.md
           - CLI: features/cli.md
     - Troubleshooting:

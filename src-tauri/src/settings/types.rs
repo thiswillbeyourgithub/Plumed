@@ -41,9 +41,7 @@ pub struct AppSettings {
     pub record_mode: String,      // "push_to_talk" | "toggle_to_talk"
     pub overlay_mode: String,     // "hidden" | "recording" | "always"
     pub overlay_position: String, // "top" | "bottom"
-    pub api_enabled: bool,
-    pub api_port: u16,
-    pub copy_to_clipboard: bool, // Keeps transcription in clipboard after recording finishes
+    pub copy_to_clipboard: bool,  // Keeps transcription in clipboard after recording finishes
     pub paste_method: PasteMethod,
     pub auto_insert: bool,
     pub persist_history: bool, // Persists last 5 transcriptions to disk
@@ -144,8 +142,6 @@ impl Default for AppSettings {
                 }
             },
             overlay_position: "bottom".to_string(),
-            api_enabled: false,
-            api_port: 4800,
             // Default to true on Wayland so transcriptions remain accessible
             // via manual Ctrl+V when enigo's key injection cannot reach native
             // Wayland apps. Users remain free to disable it.

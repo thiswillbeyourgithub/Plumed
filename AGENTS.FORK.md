@@ -64,6 +64,8 @@ Branches are created only with the user's approval. **Never open a pull request 
 
 Update this table when a branch is created, merged, or proposed upstream.
 
+Removed upstream features (security, for hospital use): the local HTTP API. Plumed runs on hospital computers, so features that open network access or send text off the machine are deleted outright (code, settings, CLI flags, docs), not just hidden. This is a deliberate exception to the minimal-diff rules: when merging upstream, keep these features out and resolve conflicts in their files by keeping them deleted.
+
 Note for `feat/medical-regex`: the `feat/regex-compile-once` cache (capped at 4096 patterns) is sized for user rules, including the 138 InterHop rules seeded by default. The ~42,000 drug and term rules do not use it: `src-tauri/src/medical/` indexes them by anchor word at startup and compiles each rule lazily, the first time a text could match it.
 
 Note for `feat/phrase-boosting`: benchmarked on 200 UltiMed validation clips (ParakeetWeb's `benchmark_datasets/french_medical/`, padded with 0.25 s of silence like the app does; unpadded clips drift into English and give meaningless numbers). WER without boosting 12.3% (drugs) / 13.1% (dictionary). Upstream's boost fed the ~77k medical phrases raises it to 17.6% / 18.5%: its strength and rank gate suit a few user words, not a huge list. ParakeetWeb's trie with the list lowers it to 12.0% / 11.7%. Hybrid with the dictionary on top: 11.6% / 12.0%, and the most target terms recovered. The ignored test `phrase_boost::model::tests::bench_transcribe` is the harness.

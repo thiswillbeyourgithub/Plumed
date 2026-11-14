@@ -70,8 +70,6 @@ pub fn execute_import(
             current.record_mode = s.record_mode.clone();
             current.overlay_mode = s.overlay_mode.clone();
             current.overlay_position = s.overlay_position.clone();
-            current.api_enabled = s.api_enabled;
-            current.api_port = s.api_port;
             current.copy_to_clipboard = s.copy_to_clipboard;
             current.paste_method = s.paste_method.clone();
             current.auto_insert = s.auto_insert;
@@ -501,6 +499,27 @@ mod tests {
         assert_eq!(settings.paste_method, PasteMethod::CtrlV);
         assert!(!settings.auto_insert);
         assert!(settings.copy_to_clipboard);
+    }
+
+    #[test]
+    fn test_parse_export_ignores_removed_feature_keys() {
+        // Exports made before the local API, command mode and prompt mode
+        // were removed must still import their remaining settings.
+        let content = r#"{
+            "version": 1,
+            "app_version": "1.0.0",
+            "exported_at": "2026-01-01T00:00:00Z",
+            "categories": {
+                "settings": { "api_enabled": true, "api_port": 4900, "sound_volume": 42 },
+                "shortcuts": { "command_shortcut": "ctrl+shift+x", "llm_mode_1_shortcut": "ctrl+shift+1" },
+                "llm_connect": { "url": "http://localhost:11434/api", "modes": [] }
+            }
+        }"#;
+
+        let data = parse_export(content).unwrap();
+
+        assert_eq!(data.categories.settings.unwrap().sound_volume, 42);
+        assert!(data.categories.shortcuts.is_some());
     }
 
     #[test]

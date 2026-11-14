@@ -67,8 +67,6 @@ export const extractSystemSettings = (all: AppSettings): ExportedSystemSettings 
         record_mode: all.record_mode,
         overlay_mode: all.overlay_mode,
         overlay_position: all.overlay_position,
-        api_enabled: all.api_enabled,
-        api_port: all.api_port,
         copy_to_clipboard: all.copy_to_clipboard,
         paste_method: all.paste_method,
         auto_insert: all.auto_insert,

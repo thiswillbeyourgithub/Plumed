@@ -44,10 +44,6 @@ C'est presque toujours un probleme de qualite du microphone. Voir [Depannage tra
 
 La transcription de reunions avec identification des locuteurs n'est pas supportee actuellement. Murmure est concu pour la dictee a un seul locuteur.
 
-### Murmure peut-il transcrire des fichiers audio ?
-
-Oui, via l'[API locale](features/api.md). Envoyez un fichier WAV a l'endpoint API.
-
 ## Installation
 
 ### Ou sont les logs ?

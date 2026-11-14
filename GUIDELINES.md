@@ -221,7 +221,6 @@ Structure the backend code in `src-tauri/src/` into logical feature modules, eac
 - **`/dictionary/`**: Phonetic dictionary and transcription correction
 - **`/engine/`**: Speech-to-text engine (Parakeet model)
 - **`/history/`**: Transcription history management
-- **`/http_api/`**: HTTP API server for external integrations
 - **`/llm/`**: LLM integration (Ollama) for post-processing
 - **`/model/`**: Model download and management
 - **`/onboarding/`**: Onboarding state and UI flow

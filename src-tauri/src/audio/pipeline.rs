@@ -6,13 +6,10 @@ use crate::dictionary::{correct_transcription, sync_boost_words, Dictionary};
 use crate::engine::transcription_engine::{TranscriptionEngine, TranscriptionResult};
 use crate::formatting_rules;
 use crate::history;
-use crate::llm::{ApiLlmRequest, ApiLlmTranscription};
 use crate::stats;
 use anyhow::Result;
 use log::{debug, error, warn};
 use std::path::Path;
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
 use tauri::{AppHandle, Emitter, Manager};
 
 pub struct ProcessingResult {
@@ -139,71 +136,12 @@ fn post_process_chunks(
 }
 
 pub fn transcribe_file_chunked(app: &AppHandle, file_path: &Path) -> Result<String> {
-    let never_cancelled = Arc::new(AtomicBool::new(false));
-    transcribe_file_chunked_cancellable(app, file_path, &never_cancelled)
-        .map(|text| text.unwrap_or_default())
-}
-
-pub fn transcribe_file_chunked_cancellable(
-    app: &AppHandle,
-    file_path: &Path,
-    cancelled: &Arc<AtomicBool>,
-) -> Result<Option<String>> {
-    let Some(accumulated) = transcribe_file_raw_cancellable(app, file_path, cancelled)? else {
-        return Ok(None);
-    };
-    let result = post_process_chunks(app, accumulated, RecordingMode::Standard)?;
-    Ok(Some(result.text.trim().to_string()))
-}
-
-pub fn transcribe_file_with_llm_cancellable(
-    app: &AppHandle,
-    file_path: &Path,
-    cancelled: &Arc<AtomicBool>,
-    request: &ApiLlmRequest,
-) -> Result<Option<ApiLlmTranscription>> {
-    let Some(accumulated) = transcribe_file_raw_cancellable(app, file_path, cancelled)? else {
-        return Ok(None);
-    };
-    if accumulated.trim().is_empty() {
-        return Ok(Some(ApiLlmTranscription {
-            transcription: String::new(),
-            outcome: Ok(String::new()),
-        }));
-    }
-
-    let cleaned = clean_accumulated(app, &accumulated);
-    let transcription = apply_formatting_rules(app, cleaned.clone())
-        .trim()
-        .to_string();
-    if cancelled.load(Ordering::SeqCst) {
-        return Ok(None);
-    }
-
-    let llm =
-        tauri::async_runtime::block_on(crate::llm::process_api_request(app, request, cleaned));
-    let outcome = llm.map(|text| apply_formatting_rules(app, text).trim().to_string());
-
-    Ok(Some(ApiLlmTranscription {
-        transcription,
-        outcome,
-    }))
-}
-
-fn transcribe_file_raw_cancellable(
-    app: &AppHandle,
-    file_path: &Path,
-    cancelled: &Arc<AtomicBool>,
-) -> Result<Option<String>> {
     let (samples, sample_rate) = read_wav_mono_native(file_path)?;
     if samples.is_empty() {
         return Err(anyhow::anyhow!("Audio file contains no samples"));
     }
-    if cancelled.load(Ordering::SeqCst) {
-        return Ok(None);
-    }
 
-    let pipeline = ChunkPipeline::start_headless(app, cancelled.clone());
+    let pipeline = ChunkPipeline::start_headless(app);
     let mut chunker = Chunker::new(pipeline.sender(), sample_rate, None);
     let window = sample_rate as usize * 33 / 1000;
     for win in samples.chunks(window) {
@@ -213,11 +151,8 @@ fn transcribe_file_raw_cancellable(
     chunker.flush_remaining();
     let accumulated = pipeline.finalize();
 
-    if cancelled.load(Ordering::SeqCst) {
-        return Ok(None);
-    }
-
-    Ok(Some(accumulated))
+    let result = post_process_chunks(app, accumulated, RecordingMode::Standard)?;
+    Ok(result.text.trim().to_string())
 }
 
 fn clean_accumulated(app: &AppHandle, accumulated: &str) -> String {

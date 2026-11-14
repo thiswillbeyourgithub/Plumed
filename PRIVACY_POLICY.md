@@ -9,7 +9,7 @@ Murmure is a privacy-first, open-source speech-to-text desktop application. It i
 - Murmure does **not** include analytics or telemetry.
 - Your audio and transcriptions are processed **locally** on your device.
 - Murmure stores only what it needs to operate (settings, custom words/rules). No transcription is written to disk by default.
-- On startup, Murmure checks for updates by contacting the configured updater endpoint (currently hosted on GitHub). Other network features are opt-in (downloading updates, enabling the local HTTP API, or connecting to an LLM endpoint you configured).
+- On startup, Murmure checks for updates by contacting the configured updater endpoint (currently hosted on GitHub). Other network features are opt-in (downloading updates or connecting to an LLM endpoint you configured).
 
 ## What Murmure does not do
 
@@ -56,7 +56,6 @@ Murmure may access the network only for:
 - **Checking for updates** (runs automatically on launch; currently not disableable in-app)
 - **Downloading and installing updates** (only when you choose to install an update)
 - **Connecting to an LLM endpoint** (e.g., a local Ollama server, or a remote OpenAI-compatible server you configured)
-- **Serving a local HTTP API** (only if you enable it; it listens on `127.0.0.1` on the configured port)
 
 The update check does not include your audio or transcriptions.
 
@@ -65,8 +64,6 @@ When connecting to an LLM endpoint, Murmure sends the text you ask it to process
 - Murmure **blocks sending API keys over unencrypted HTTP** connections — only HTTPS or local/private addresses are allowed when an API key is configured.
 - During setup, Murmure displays a **clear warning** that your transcriptions will be sent to the remote server for processing.
 - The recommended default setup uses a **local** LLM server (e.g., Ollama) where no data leaves your device.
-
-If you enable the local HTTP API, it can be accessed by other software running on your device.
 
 Third-party policy (GitHub): [GitHub Privacy Statement](https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement)
 
