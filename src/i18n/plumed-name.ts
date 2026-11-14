@@ -6,7 +6,6 @@ import type { PostProcessorModule } from 'i18next';
 
 // These ask users to support the original Murmure project: keep its name.
 const KEEP_ORIGINAL_NAME = new Set([
-    'Support Murmure',
     'Help Murmure Grow',
     'Murmure is free and open-source. Your support helps keep it alive and improving.',
     'Free, 1 click. The simplest way to support Murmure.',

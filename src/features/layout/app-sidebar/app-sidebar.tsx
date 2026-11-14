@@ -1,7 +1,7 @@
 import {
     Home,
     Settings,
-    Heart,
+    Info,
     ChevronRight,
     Keyboard,
     BookText,
@@ -12,11 +12,10 @@ import {
     Newspaper,
     Mic,
     ArrowDownUp,
-    Puzzle,
     Smartphone,
 } from 'lucide-react';
 import { Link, useLocation } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
     Sidebar,
     SidebarHeader,
@@ -40,6 +39,7 @@ import { isPathInItems } from './app-sidebar.helpers';
 import { Onboarding } from '@/features/onboarding/onboarding';
 import { useIsWayland } from '@/components/hooks/use-linux-session-type';
 import { useShortcut, SHORTCUT_CONFIGS } from '@/features/settings/shortcuts/hooks/use-shortcut';
+import { PLUMED_LATEST_RELEASE_URL, PLUMED_NEW_ISSUE_URL, PLUMED_RELEASES_URL } from '@/utils/plumed-links';
 
 const getPersonalizeSubItems = (t: (key: string) => string) => [
     {
@@ -56,7 +56,7 @@ const getPersonalizeSubItems = (t: (key: string) => string) => [
     },
 ];
 
-const getExtensionsSubItems = (t: (key: string) => string) => [
+const getTopLevelItems = (t: (key: string) => string) => [
     {
         name: t('Voice Mode'),
         url: '/extensions/voice-mode',
@@ -95,24 +95,16 @@ const getSettingsSubItems = (t: (key: string) => string) => [
 export const AppSidebar = () => {
     const { pathname } = useLocation();
     const [personalizeOpen, setPersonalizeOpen] = useState(true);
-    const [extensionsOpen, setExtensionsOpen] = useState(pathname.startsWith('/extensions'));
     const [settingsOpen, setSettingsOpen] = useState(pathname.startsWith('/settings'));
-
-    useEffect(() => {
-        if (pathname.startsWith('/extensions')) {
-            setExtensionsOpen(true);
-        }
-    }, [pathname]);
     const version = useGetVersion();
     const { t } = useTranslation();
     const { seen: revampSeen } = useDictionaryRevampSeen();
     const personalizeSubItems = getPersonalizeSubItems(t);
-    const extensionsSubItems = getExtensionsSubItems(t);
+    const topLevelItems = getTopLevelItems(t);
     const settingsSubItems = getSettingsSubItems(t);
     const showRevampDot = !revampSeen;
     const isPersonalizeActive = isPathInItems(pathname, personalizeSubItems);
     const isSettingsActive = isPathInItems(pathname, settingsSubItems);
-    const isExtensionsActive = isPathInItems(pathname, extensionsSubItems);
     const isAboutActive = pathname === '/about';
     const { shortcut: recordShortcut } = useShortcut(SHORTCUT_CONFIGS.record);
     const isWayland = useIsWayland();
@@ -133,6 +125,21 @@ export const AppSidebar = () => {
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
+
+                        {topLevelItems.map((item) => (
+                            <SidebarMenuItem key={item.url}>
+                                <SidebarMenuButton
+                                    asChild
+                                    isActive={pathname === item.url}
+                                    data-testid={item.dataTestId}
+                                >
+                                    <Link to={item.url}>
+                                        <item.icon />
+                                        <span>{item.name}</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        ))}
 
                         <SidebarMenuItem>
                             <SidebarMenuButton
@@ -194,33 +201,6 @@ export const AppSidebar = () => {
                                 </SidebarMenuSub>
                             )}
                         </SidebarMenuItem>
-
-                        <SidebarMenuItem>
-                            <SidebarMenuButton
-                                onClick={() => setExtensionsOpen(!extensionsOpen)}
-                                data-testid="extensions-tab"
-                            >
-                                <Puzzle className={isExtensionsActive ? 'text-sky-400' : undefined} />
-                                <span>{t('Extensions')}</span>
-                                <ChevronRight
-                                    className={`ml-auto transition-transform ${extensionsOpen ? 'rotate-90' : ''}`}
-                                />
-                            </SidebarMenuButton>
-                            {extensionsOpen && (
-                                <SidebarMenuSub>
-                                    {extensionsSubItems.map((item) => (
-                                        <SidebarMenuSubItem key={item.url} data-testid={item.dataTestId}>
-                                            <SidebarMenuSubButton asChild isActive={pathname === item.url}>
-                                                <Link to={item.url}>
-                                                    <item.icon />
-                                                    <span>{item.name}</span>
-                                                </Link>
-                                            </SidebarMenuSubButton>
-                                        </SidebarMenuSubItem>
-                                    ))}
-                                </SidebarMenuSub>
-                            )}
-                        </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarGroup>
                 {!isWayland && (
@@ -231,11 +211,7 @@ export const AppSidebar = () => {
             </SidebarContent>
             <SidebarFooter className="bg-background ">
                 <a
-                    href={
-                        version.length > 0
-                            ? `https://github.com/Kieirra/murmure/releases/tag/${version}`
-                            : 'https://github.com/Kieirra/murmure/releases/latest'
-                    }
+                    href={version.length > 0 ? `${PLUMED_RELEASES_URL}/tag/${version}` : PLUMED_LATEST_RELEASE_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-muted-foreground text-xs hover:text-foreground transition-colors flex items-center gap-2 px-2"
@@ -244,7 +220,7 @@ export const AppSidebar = () => {
                     <span>{t('Release notes')}</span>
                 </a>
                 <a
-                    href="https://github.com/Kieirra/murmure/issues/new"
+                    href={PLUMED_NEW_ISSUE_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-muted-foreground text-xs hover:text-foreground transition-colors flex items-center gap-2 px-2"
@@ -257,8 +233,8 @@ export const AppSidebar = () => {
                     className={`${isAboutActive ? 'text-sky-400' : 'text-muted-foreground hover:text-foreground'} text-xs transition-colors flex items-center gap-2 px-2`}
                     data-testid="about-tab"
                 >
-                    <Heart className={`w-4 h-4 ${isAboutActive ? 'text-sky-400' : 'text-rose-300/70'}`} />
-                    <span>{t('Support Murmure')}</span>
+                    <Info className="w-4 h-4" />
+                    <span>{t('About')}</span>
                 </Link>
                 <Separator />
                 <div className="flex items-center gap-2 justify-center">
