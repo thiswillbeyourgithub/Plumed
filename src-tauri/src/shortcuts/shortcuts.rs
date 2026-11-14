@@ -1,5 +1,3 @@
-use crate::audio::types::RecordingMode;
-use crate::overlay::overlay::notify_overlay_error;
 use crate::shortcuts::modifiers::wait_for_modifiers_released;
 use crate::shortcuts::registry::ShortcutRegistryState;
 use crate::shortcuts::types::{
@@ -25,76 +23,6 @@ fn within_cooldown(last: &Mutex<Instant>) -> bool {
     last.lock().elapsed() < SHORTCUT_COOLDOWN
 }
 
-/// Verifie qu'un mode LLM est utilisable (LLM Connect active + prompt configure).
-/// Retourne Ok(()) si pret, Err(()) sinon. Emet `llm-connect-disabled` si LLM
-/// Connect est desactive apres l'onboarding, ou `llm-mode-not-configured` si le
-/// mode existe sans prompt, uniquement si `notify` est vrai
-/// (le clavier passe false sur Release pour eviter le double-fire press+release).
-pub(crate) fn ensure_llm_mode_ready(app: &AppHandle, index: usize, notify: bool) -> Result<(), ()> {
-    let settings = crate::llm::helpers::load_llm_connect_settings(app);
-    match (settings.onboarding_completed, settings.enabled) {
-        (false, _) => {
-            warn!("LLM Connect disabled: llm-mode {} ignored", index + 1);
-            return Err(());
-        }
-        (true, false) => {
-            warn!("LLM Connect turned off: llm-mode {} ignored", index + 1);
-            if notify {
-                notify_overlay_error(app, "llm-connect-disabled");
-            }
-            return Err(());
-        }
-        (true, true) => {}
-    }
-    if settings
-        .modes
-        .get(index)
-        .is_none_or(|m| m.prompt.trim().is_empty())
-    {
-        if notify {
-            warn!(
-                "LLM mode {} not configured, emitting llm-mode-not-configured",
-                index + 1
-            );
-            let _ = app.emit(
-                "llm-mode-not-configured",
-                serde_json::json!({ "mode": index + 1 }),
-            );
-        }
-        return Err(());
-    }
-    Ok(())
-}
-
-pub(crate) fn ensure_command_ready(app: &AppHandle, notify: bool) -> Result<(), ()> {
-    let settings = crate::llm::helpers::load_llm_connect_settings(app);
-    match (
-        settings.onboarding_completed,
-        settings.command.enabled,
-        settings.command.model.trim().is_empty(),
-    ) {
-        (false, _, _) => {
-            warn!("Command mode not configured, recording ignored");
-            Err(())
-        }
-        (true, false, _) => {
-            warn!("Command mode turned off, recording ignored");
-            if notify {
-                notify_overlay_error(app, "command-disabled");
-            }
-            Err(())
-        }
-        (true, true, true) => {
-            warn!("Command mode has no model, recording ignored");
-            if notify {
-                notify_overlay_error(app, "command-not-configured");
-            }
-            Err(())
-        }
-        (true, true, false) => Ok(()),
-    }
-}
-
 pub(crate) fn is_recording_idle() -> bool {
     *recording_state().source.lock() == RecordingSource::None
 }
@@ -116,50 +44,13 @@ pub fn handle_shortcut_event(
                 mode,
                 event_type,
                 &shortcut_state,
-                move || crate::audio::record_audio(&app_for_fn, RecordingMode::Standard),
-            );
-        }
-        ShortcutAction::StartRecordingCommand => {
-            if is_recording_idle()
-                && ensure_command_ready(app, event_type == KeyEventType::Pressed).is_err()
-            {
-                return;
-            }
-            let app_for_fn = app.clone();
-            handle_recording_event(
-                app,
-                RecordingSource::Command,
-                mode,
-                event_type,
-                &shortcut_state,
-                move || crate::audio::record_audio(&app_for_fn, RecordingMode::Command),
+                move || crate::audio::record_audio(&app_for_fn),
             );
         }
         ShortcutAction::PasteLastTranscript => {
             if event_type == KeyEventType::Pressed {
                 spawn_paste_last_transcript(app);
             }
-        }
-        ShortcutAction::StartRecordingLlmMode(index) => {
-            if ensure_llm_mode_ready(app, *index, event_type == KeyEventType::Pressed).is_err() {
-                return;
-            }
-            crate::llm::switch_active_mode_silent(app, *index);
-            let app_for_fn = app.clone();
-            handle_recording_event(
-                app,
-                RecordingSource::Llm,
-                mode,
-                event_type,
-                &shortcut_state,
-                move || crate::audio::record_audio(&app_for_fn, RecordingMode::Llm),
-            );
-        }
-        ShortcutAction::TransformSelectionLlmMode(index) => {
-            if event_type != KeyEventType::Released {
-                return;
-            }
-            crate::llm::spawn_transform_selection(app, *index);
         }
         ShortcutAction::CancelRecording => {
             if event_type == KeyEventType::Pressed && !is_recording_idle() {
@@ -313,7 +204,7 @@ fn pre_stop(_app: &AppHandle, recording_source: &mut RecordingSource) {
 }
 
 fn finish_stop(app: &AppHandle) {
-    // Off-thread because stop_recording blocks on the LLM request and paste
+    // Off-thread because stop_recording blocks on transcription and paste
     // (~1s), during which the processor must keep handling keyboard events.
     let app = app.clone();
     std::thread::spawn(move || {

@@ -4,7 +4,6 @@ export const STRINGS = {
     en: {
         'tabs.remote': 'Remote',
         'tabs.transcription': 'Transcription',
-        'tabs.translation': 'Translation',
 
         'remote.empty': 'Transcription will appear here',
         'remote.copied': 'Copied!',
@@ -20,15 +19,6 @@ export const STRINGS = {
         'transcription.copied': 'Copied!',
         'transcription.clear': 'Clear history',
         'transcription.clearConfirm': 'Clear all transcriptions?',
-
-        'translation.empty': 'Tap REC to start a bilingual conversation',
-        'translation.requirement': 'Requires Prompt Mode on Plumed desktop',
-        'translation.languages': 'Languages:',
-        'translation.translating': 'Translating...',
-        'translation.unavailable': 'Prompt Mode not configured on desktop',
-        'translation.recHint': 'Tap to talk',
-        'translation.chooseLang': 'Choose language',
-        'translation.closeLangPicker': 'Close',
 
         'status.menu.reload': 'Reload',
         'status.menu.options': 'Options',
@@ -51,7 +41,6 @@ export const STRINGS = {
     fr: {
         'tabs.remote': 'Remote',
         'tabs.transcription': 'Transcription',
-        'tabs.translation': 'Traduction',
 
         'remote.empty': 'La transcription apparaitra ici',
         'remote.copied': 'Copie !',
@@ -67,15 +56,6 @@ export const STRINGS = {
         'transcription.copied': 'Copie !',
         'transcription.clear': "Effacer l'historique",
         'transcription.clearConfirm': 'Effacer toutes les transcriptions ?',
-
-        'translation.empty': 'Appuyez sur REC pour demarrer une conversation bilingue',
-        'translation.requirement': 'Necessite le mode prompt sur Plumed desktop',
-        'translation.languages': 'Langues :',
-        'translation.translating': 'Traduction...',
-        'translation.unavailable': 'Mode Prompt non configure sur le bureau',
-        'translation.recHint': 'Appuyez pour parler',
-        'translation.chooseLang': 'Choisir la langue',
-        'translation.closeLangPicker': 'Fermer',
 
         'status.menu.reload': 'Recharger',
         'status.menu.options': 'Options',

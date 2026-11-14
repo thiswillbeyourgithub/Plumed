@@ -11,26 +11,22 @@ interface UseShortcutOptions {
     defaultShortcut: string;
     getCommand: string;
     setCommand: string;
-    index?: number;
 }
 
-export const useShortcut = ({ defaultShortcut, getCommand, setCommand, index }: UseShortcutOptions) => {
+export const useShortcut = ({ defaultShortcut, getCommand, setCommand }: UseShortcutOptions) => {
     const [shortcut, setShortcut] = useState(defaultShortcut);
     const { t } = useTranslation();
 
     useEffect(() => {
-        invoke<string>(getCommand, { index })
+        invoke<string>(getCommand)
             .then((val) => val != null && setShortcut(val))
             .catch((err) => console.error(`Failed to load shortcut (${getCommand}):`, err));
-    }, [getCommand, index]);
+    }, [getCommand]);
 
     const saveShortcut = async (value: string) => {
         if (value == null) return;
         try {
-            const normalized = await invoke<string>(setCommand, {
-                index,
-                binding: value,
-            });
+            const normalized = await invoke<string>(setCommand, { binding: value });
             setShortcut(normalized);
         } catch {
             toast.error(t('Failed to save shortcut'));
@@ -60,59 +56,10 @@ export const SHORTCUT_CONFIGS = {
         getCommand: 'get_last_transcript_shortcut',
         setCommand: 'set_last_transcript_shortcut',
     },
-    command: {
-        defaultShortcut: 'ctrl+shift+x',
-        getCommand: 'get_command_shortcut',
-        setCommand: 'set_command_shortcut',
-    },
     record: {
         defaultShortcut: 'ctrl+space',
         getCommand: 'get_record_shortcut',
         setCommand: 'set_record_shortcut',
-    },
-    llmMode1: {
-        defaultShortcut: 'ctrl+shift+1',
-        getCommand: 'get_llm_mode_1_shortcut',
-        setCommand: 'set_llm_mode_1_shortcut',
-    },
-    llmMode2: {
-        defaultShortcut: 'ctrl+shift+2',
-        getCommand: 'get_llm_mode_2_shortcut',
-        setCommand: 'set_llm_mode_2_shortcut',
-    },
-    llmMode3: {
-        defaultShortcut: 'ctrl+shift+3',
-        getCommand: 'get_llm_mode_3_shortcut',
-        setCommand: 'set_llm_mode_3_shortcut',
-    },
-    llmMode4: {
-        defaultShortcut: 'ctrl+shift+4',
-        getCommand: 'get_llm_mode_4_shortcut',
-        setCommand: 'set_llm_mode_4_shortcut',
-    },
-    llmTransform1: {
-        defaultShortcut: 'ctrl+alt+shift+1',
-        getCommand: 'get_llm_transform_shortcut',
-        setCommand: 'set_llm_transform_shortcut',
-        index: 0,
-    },
-    llmTransform2: {
-        defaultShortcut: 'ctrl+alt+shift+2',
-        getCommand: 'get_llm_transform_shortcut',
-        setCommand: 'set_llm_transform_shortcut',
-        index: 1,
-    },
-    llmTransform3: {
-        defaultShortcut: 'ctrl+alt+shift+3',
-        getCommand: 'get_llm_transform_shortcut',
-        setCommand: 'set_llm_transform_shortcut',
-        index: 2,
-    },
-    llmTransform4: {
-        defaultShortcut: 'ctrl+alt+shift+4',
-        getCommand: 'get_llm_transform_shortcut',
-        setCommand: 'set_llm_transform_shortcut',
-        index: 3,
     },
     cancel: {
         defaultShortcut: 'ctrl+backspace',
@@ -125,17 +72,3 @@ export const SHORTCUT_CONFIGS = {
         setCommand: 'set_voice_mode_toggle_shortcut',
     },
 };
-
-export const LLM_MODE_SHORTCUT_CONFIGS = [
-    SHORTCUT_CONFIGS.llmMode1,
-    SHORTCUT_CONFIGS.llmMode2,
-    SHORTCUT_CONFIGS.llmMode3,
-    SHORTCUT_CONFIGS.llmMode4,
-];
-
-export const LLM_TRANSFORM_SHORTCUT_CONFIGS = [
-    SHORTCUT_CONFIGS.llmTransform1,
-    SHORTCUT_CONFIGS.llmTransform2,
-    SHORTCUT_CONFIGS.llmTransform3,
-    SHORTCUT_CONFIGS.llmTransform4,
-];

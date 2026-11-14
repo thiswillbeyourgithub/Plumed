@@ -17,10 +17,8 @@ import {
     extractShortcuts,
     extractVoiceMode,
     extractSmartMic,
-    extractLlmConnect,
 } from '../../import-export.helpers';
 import { FormattingSettings } from '@/features/personalize/formatting-rules/types';
-import { LLMConnectSettings } from '@/features/extensions/llm-connect/hooks/use-llm-connect';
 
 interface PreloadedData {
     allSettings: AppSettings | null;
@@ -86,36 +84,6 @@ export const useExport = () => {
                         categories.formatting_rules = {
                             built_in: includeBuiltIn ? data.built_in : undefined,
                             rules: filteredRules,
-                        };
-                    })
-                );
-            }
-
-            if (selectedCategories.includes('llm_connect')) {
-                fetchPromises.push(
-                    invoke<LLMConnectSettings>('get_llm_connect_settings').then((data) => {
-                        const subItems = getSubItems('llm_connect');
-                        const full = extractLlmConnect(data);
-                        const includeConnection = subItems?.['connection'] !== false;
-                        const includeCommand = subItems?.['command'] !== false;
-                        const filteredModes = full.modes.filter((_mode, index) => {
-                            if (subItems == null) {
-                                return true;
-                            }
-                            return subItems[SUB_ITEM_KEY.mode(index)] !== false;
-                        });
-
-                        categories.llm_connect = {
-                            ...full,
-                            url: includeConnection ? full.url : undefined,
-                            remote_url: includeConnection ? full.remote_url : undefined,
-                            remote_privacy_acknowledged: includeConnection
-                                ? full.remote_privacy_acknowledged
-                                : undefined,
-                            onboarding_completed: includeConnection ? full.onboarding_completed : undefined,
-                            enabled: filteredModes.length > 0 ? full.enabled : undefined,
-                            modes: filteredModes,
-                            command: includeCommand ? full.command : undefined,
                         };
                     })
                 );

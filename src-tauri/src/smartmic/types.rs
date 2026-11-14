@@ -4,41 +4,6 @@ use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
 use tokio::sync::{mpsc, oneshot};
 
-/// Recording mode for SmartMic, parsed from client strings.
-#[derive(Clone, Debug)]
-pub enum SmartMicMode {
-    Stt,
-    Llm(usize),
-    Translation { lang_a: String, lang_b: String },
-}
-
-impl SmartMicMode {
-    pub fn from_client(mode: &str, lang_a: Option<String>, lang_b: Option<String>) -> Self {
-        if mode == "translation" {
-            if let (Some(a), Some(b)) = (lang_a, lang_b) {
-                return Self::Translation {
-                    lang_a: a,
-                    lang_b: b,
-                };
-            }
-        }
-        if let Some(suffix) = mode.strip_prefix("llm_") {
-            if let Ok(idx) = suffix.parse::<usize>() {
-                return Self::Llm(idx);
-            }
-        }
-        Self::Stt
-    }
-
-    pub fn to_recording_mode(&self) -> crate::audio::types::RecordingMode {
-        match self {
-            Self::Stt => crate::audio::types::RecordingMode::Standard,
-            Self::Llm(_) => crate::audio::types::RecordingMode::Llm,
-            Self::Translation { .. } => crate::audio::types::RecordingMode::Standard,
-        }
-    }
-}
-
 /// Main state for the SmartMic feature, managed by Tauri
 #[derive(Clone)]
 pub struct SmartMicState {
@@ -46,7 +11,6 @@ pub struct SmartMicState {
     pub connected_device: Arc<Mutex<Option<ConnectedDevice>>>,
     pub paired_devices: Arc<Mutex<Vec<PairedDevice>>>,
     pub recording_buffer: Arc<Mutex<Vec<i16>>>,
-    pub recording_mode: Arc<Mutex<SmartMicMode>>,
     pub paste_enabled: Arc<AtomicBool>,
     pub sample_rate: Arc<Mutex<u32>>,
     pub is_running: Arc<AtomicBool>,
@@ -59,7 +23,6 @@ impl SmartMicState {
             connected_device: Arc::new(Mutex::new(None)),
             paired_devices: Arc::new(Mutex::new(Vec::new())),
             recording_buffer: Arc::new(Mutex::new(Vec::new())),
-            recording_mode: Arc::new(Mutex::new(SmartMicMode::Stt)),
             paste_enabled: Arc::new(AtomicBool::new(true)),
             sample_rate: Arc::new(Mutex::new(16000)),
             is_running: Arc::new(AtomicBool::new(false)),
@@ -128,13 +91,8 @@ pub enum ClientMessage {
         dy: f64,
     },
     RecStart {
-        mode: String,
         #[serde(default = "default_paste")]
         paste: bool,
-        #[serde(default)]
-        lang_a: Option<String>,
-        #[serde(default)]
-        lang_b: Option<String>,
     },
     RecStop,
     RecCancel,
@@ -152,30 +110,11 @@ pub enum ClientMessage {
 #[derive(Serialize, Debug)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum ServerMessage {
-    Transcription {
-        text: String,
-        #[serde(skip_serializing_if = "Option::is_none")]
-        detected_lang: Option<String>,
-        #[serde(skip_serializing_if = "Option::is_none")]
-        translated_text: Option<String>,
-        #[serde(skip_serializing_if = "Option::is_none")]
-        target_lang: Option<String>,
-    },
-    Status {
-        recording: bool,
-    },
-    MicLevel {
-        level: f32,
-    },
-    Modes {
-        modes: Vec<String>,
-    },
-    Error {
-        message: String,
-    },
-    DeviceAlreadyConnected {
-        device_name: String,
-    },
+    Transcription { text: String },
+    Status { recording: bool },
+    MicLevel { level: f32 },
+    Error { message: String },
+    DeviceAlreadyConnected { device_name: String },
     ForceDisconnect,
 }
 

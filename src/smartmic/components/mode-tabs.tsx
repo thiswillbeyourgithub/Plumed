@@ -4,7 +4,6 @@ import { t, type StringKey } from '../i18n';
 const TABS: { mode: ViewMode; labelKey: StringKey }[] = [
     { mode: 'remote', labelKey: 'tabs.remote' },
     { mode: 'transcription', labelKey: 'tabs.transcription' },
-    { mode: 'translation', labelKey: 'tabs.translation' },
 ];
 
 interface ModeTabsProps {
@@ -22,9 +21,7 @@ export const ModeTabs = ({ activeMode, onModeChange }: ModeTabsProps) => {
                     type="button"
                     aria-selected={activeMode === mode}
                     className={`flex-1 text-sm font-medium ${
-                        activeMode === mode
-                            ? 'text-sky-400 border-b-2 border-sky-400'
-                            : 'text-[#888]'
+                        activeMode === mode ? 'text-sky-400 border-b-2 border-sky-400' : 'text-[#888]'
                     }`}
                     onClick={() => onModeChange(mode)}
                 >

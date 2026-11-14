@@ -20,17 +20,11 @@ pub struct PendingFlashState(pub Mutex<Option<String>>);
 
 pub const MIN_RESULT_PANEL_SECS: u64 = 2;
 pub const MAX_RESULT_PANEL_SECS: u64 = 15;
-// Mirrors DISMISS_MS in src/overlay/use-overlay-error.ts: the overlay must
-// outlive the error toast it renders.
-const ERROR_OVERLAY_LINGER: Duration = Duration::from_millis(4000);
-pub(crate) const OVERLAY_MOUNT_DELAY: Duration = Duration::from_millis(500);
 
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FinalResultPayload {
     pub text: String,
-    pub prompt_name: Option<String>,
-    pub mode: String,
 }
 
 // Same cold-start handoff as PendingFlashState: when the overlay window
@@ -336,12 +330,13 @@ pub fn warmup_overlay(app_handle: &AppHandle) {
     }
 }
 
-fn emit_recording_mode(app_handle: &AppHandle) {
+// Tells the overlay a new dictation started, so it drops a result panel and
+// streaming preview text still on screen.
+fn emit_overlay_session_start(app_handle: &AppHandle) {
     let Some(window) = app_handle.get_webview_window("recording_overlay") else {
         return;
     };
-    let state = app_handle.state::<crate::audio::types::AudioState>();
-    let _ = window.emit("recording-mode", state.get_recording_mode().as_str());
+    let _ = window.emit("overlay-session-start", ());
 }
 
 fn present_recording_overlay(app_handle: &AppHandle) {
@@ -351,20 +346,20 @@ fn present_recording_overlay(app_handle: &AppHandle) {
         warn!("recording_overlay window not found on present_recording_overlay");
         return;
     };
-    emit_recording_mode(app_handle);
+    emit_overlay_session_start(app_handle);
     let _ = window.show();
     let _ = window.set_always_on_top(true);
     crate::overlay::input_region::on_overlay_shown(&window);
 }
 
-// Entry point of every dictation and transform session. In "always" mode the
+// Entry point of every dictation session. In "always" mode the
 // window is already visible, so `show_recording_overlay` alone would never run
 // and a displayed result panel would keep the overlay for itself indefinitely.
 pub fn begin_overlay_session(app_handle: &AppHandle) {
     invalidate_result_panel();
     clear_pending_flash(app_handle);
     if settings::load_settings(app_handle).overlay_mode.as_str() == "hidden" {
-        emit_recording_mode(app_handle);
+        emit_overlay_session_start(app_handle);
         return;
     }
     show_recording_overlay(app_handle);
@@ -426,48 +421,29 @@ fn present_result_overlay(app_handle: &AppHandle) {
     crate::overlay::input_region::on_overlay_shown(&window);
 }
 
-fn result_panel_allows(setting: &str, mode: &str) -> bool {
-    match setting {
-        "off" => false,
-        "all" => true,
-        "command_llm" => matches!(mode, "command" | "llm" | "transform"),
-        _ => mode == "command",
-    }
-}
-
-pub fn should_show_result_panel(app: &AppHandle, mode: &str, text: &str) -> bool {
+fn should_show_result_panel(app: &AppHandle, text: &str) -> bool {
     if text.trim().is_empty() {
         return false;
     }
     let s = settings::load_settings(app);
-    if s.overlay_mode.as_str() == "hidden" {
-        return false;
-    }
-    result_panel_allows(&s.result_panel_mode, mode)
+    s.overlay_mode.as_str() != "hidden" && s.result_panel_mode == "all"
 }
 
-pub fn show_result_panel(app: &AppHandle, payload: FinalResultPayload) {
+fn show_result_panel(app: &AppHandle, payload: FinalResultPayload) {
     *PENDING_RESULT.lock() = Some(payload);
     let generation = RESULT_PANEL_GENERATION.fetch_add(1, Ordering::SeqCst) + 1;
     present_on_main_thread(app, present_result_overlay);
     spawn_result_panel_watchdog(app, generation);
 }
 
-pub fn show_result_panel_if_allowed(
-    app: &AppHandle,
-    mode: &str,
-    text: &str,
-    prompt_name: impl FnOnce() -> Option<String>,
-) {
-    if !should_show_result_panel(app, mode, text) {
+pub fn show_result_panel_if_allowed(app: &AppHandle, text: &str) {
+    if !should_show_result_panel(app, text) {
         return;
     }
     show_result_panel(
         app,
         FinalResultPayload {
             text: text.to_string(),
-            prompt_name: prompt_name(),
-            mode: mode.to_string(),
         },
     );
 }
@@ -488,44 +464,18 @@ fn spawn_result_panel_watchdog(app: &AppHandle, generation: u64) {
     });
 }
 
-// Honors the "always" overlay mode and keeps the window up while a session or
-// a transform is in flight; otherwise tears the overlay down so it does not
-// linger between flashes.
+// Honors the "always" overlay mode and keeps the window up while a session is
+// in flight; otherwise tears the overlay down so it does not linger between
+// flashes.
 pub fn hide_overlay_if_idle(app: &AppHandle) {
     invalidate_result_panel();
     if settings::load_settings(app).overlay_mode.as_str() == "always" {
-        return;
-    }
-    if crate::llm::is_transform_active() {
         return;
     }
     let state = app.state::<crate::audio::types::AudioState>();
     if !state.is_session_active() {
         hide_recording_overlay(app);
     }
-}
-
-// Keeps the overlay alive long enough to render "llm-error", then defers to
-// hide_overlay_if_idle so a result panel or a new recording survives.
-pub(crate) fn hide_overlay_after_error(app: &AppHandle) {
-    let app_clone = app.clone();
-    std::thread::spawn(move || {
-        std::thread::sleep(ERROR_OVERLAY_LINGER);
-        if has_pending_result() {
-            return;
-        }
-        hide_overlay_if_idle(&app_clone);
-    });
-}
-
-pub(crate) fn notify_overlay_error(app: &AppHandle, event: &'static str) {
-    begin_overlay_session(app);
-    let app = app.clone();
-    std::thread::spawn(move || {
-        std::thread::sleep(OVERLAY_MOUNT_DELAY);
-        let _ = app.emit(event, ());
-        hide_overlay_after_error(&app);
-    });
 }
 
 // Leaves PENDING_RESULT untouched so the `has_pending_result` guards keep
@@ -652,50 +602,9 @@ pub fn clear_pending_flash(app_handle: &AppHandle) {
 mod tests {
     use super::*;
 
-    const MODES: [&str; 4] = ["standard", "command", "llm", "transform"];
-
-    fn allowed_modes(setting: &str) -> Vec<&'static str> {
-        MODES
-            .into_iter()
-            .filter(|mode| result_panel_allows(setting, mode))
-            .collect()
-    }
-
-    #[test]
-    fn off_never_allows_the_result_panel() {
-        assert!(allowed_modes("off").is_empty());
-    }
-
-    #[test]
-    fn command_allows_command_only() {
-        assert_eq!(allowed_modes("command"), ["command"]);
-    }
-
-    #[test]
-    fn command_llm_excludes_standard_only() {
-        assert_eq!(
-            allowed_modes("command_llm"),
-            ["command", "llm", "transform"]
-        );
-    }
-
-    #[test]
-    fn all_allows_every_mode() {
-        assert_eq!(allowed_modes("all"), MODES);
-    }
-
-    #[test]
-    fn unknown_setting_falls_back_to_command() {
-        assert_eq!(allowed_modes(""), ["command"]);
-        assert_eq!(allowed_modes("commands"), ["command"]);
-        assert_eq!(allowed_modes("Commands"), ["command"]);
-    }
-
     fn stage_pending_result() {
         *PENDING_RESULT.lock() = Some(FinalResultPayload {
             text: "result".to_string(),
-            prompt_name: None,
-            mode: "command".to_string(),
         });
     }
 

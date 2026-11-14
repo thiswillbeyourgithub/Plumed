@@ -12,20 +12,16 @@ import { buildRenderers } from '../import-export.renderers';
 import { CATEGORY_DEFINITIONS } from '../import-export.constants';
 
 export const ExportSection = () => {
-    const { rules, llmModes, dictionaryWords, allSettings, exportSelection, setExportSelection } = useExportData();
+    const { rules, dictionaryWords, allSettings, exportSelection, setExportSelection } = useExportData();
     const { isExporting, handleExport } = useExport();
     const { t } = useTranslation();
 
     const counters = {
         formatting_rules: rules.length,
-        llm_connect: llmModes.length,
         dictionary: dictionaryWords.length,
     };
 
-    const categories = buildCategoriesWithDynamic(
-        CATEGORY_DEFINITIONS,
-        buildRenderers(rules, llmModes, dictionaryWords)
-    );
+    const categories = buildCategoriesWithDynamic(CATEGORY_DEFINITIONS, buildRenderers(rules, dictionaryWords));
 
     const selectedCategories = getSelectedCategoryKeys(CATEGORY_DEFINITIONS, exportSelection);
 
@@ -36,7 +32,7 @@ export const ExportSection = () => {
             <Typography.Title className="font-semibold text-sky-400!">{t('Export')}</Typography.Title>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Info className="h-3.5 w-3.5 shrink-0" />
-                <span>{t('API key and microphone selection are never exported.')}</span>
+                <span>{t('Microphone selection is never exported.')}</span>
             </div>
             <SettingsUI.Container>
                 <CategoryTree

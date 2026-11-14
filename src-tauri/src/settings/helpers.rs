@@ -1,9 +1,10 @@
+// "all" shows every dictation. Anything else is "off", including the legacy
+// "command" and "command_llm" values: those only covered the removed Command
+// and Prompt modes, so they never showed a plain dictation.
 pub fn normalize_result_panel_mode(mode: &str) -> &'static str {
     match mode {
-        "off" => "off",
-        "command_llm" => "command_llm",
         "all" => "all",
-        _ => "command",
+        _ => "off",
     }
 }
 
@@ -28,15 +29,15 @@ mod tests {
 
     #[test]
     fn valid_result_panel_modes_are_kept() {
-        for mode in ["off", "command", "command_llm", "all"] {
+        for mode in ["off", "all"] {
             assert_eq!(normalize_result_panel_mode(mode), mode);
         }
     }
 
     #[test]
-    fn unknown_result_panel_modes_fall_back_to_command() {
-        for mode in ["commands", "", "Commands"] {
-            assert_eq!(normalize_result_panel_mode(mode), "command");
+    fn legacy_and_unknown_result_panel_modes_fall_back_to_off() {
+        for mode in ["command", "command_llm", "commands", "", "All"] {
+            assert_eq!(normalize_result_panel_mode(mode), "off");
         }
     }
 }

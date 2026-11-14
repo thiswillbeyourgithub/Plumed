@@ -20,7 +20,7 @@ export const useStreamingState = () => {
         const unlistenProvisional = listen<Segment>('preview-provisional', (event) => {
             setState((current) => applyProvisional(current, event.payload));
         });
-        const unlistenReset = listen('recording-mode', () => {
+        const unlistenReset = listen('overlay-session-start', () => {
             setState(EMPTY_STATE);
         });
         const unlistenPreviewReset = listen('preview-reset', () => {

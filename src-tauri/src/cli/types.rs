@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use serde::Deserialize;
 
 use crate::formatting_rules::types::FormattingSettings;
-use crate::llm::types::LLMConnectSettings;
 use crate::settings::types::PasteMethod;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -16,13 +15,10 @@ pub enum CliCommand {
         file_path: String,
     },
     Transcription,
-    TranscriptionCommand,
     PasteLast,
     Cancel,
     VoiceMode,
     Quit,
-    LlmMode(u8),
-    LlmTransform(u8),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -49,7 +45,6 @@ pub struct ExportedCategories {
     pub voice_mode: Option<VoiceModeSettings>,
     pub smartmic: Option<SmartMicSettings>,
     pub formatting_rules: Option<FormattingSettings>,
-    pub llm_connect: Option<LLMConnectSettings>,
     pub dictionary: Option<DictionaryExport>,
 }
 
@@ -119,7 +114,7 @@ impl Default for SystemSettings {
             streaming_text_width: 450,
             streaming_font_size: 11,
             streaming_max_lines: 5,
-            result_panel_mode: "command".to_string(),
+            result_panel_mode: "off".to_string(),
             result_panel_duration_secs: 5,
         }
     }
@@ -130,7 +125,6 @@ impl Default for SystemSettings {
 pub struct VoiceModeSettings {
     pub wake_word_enabled: bool,
     pub wake_word_record: String,
-    pub wake_word_command: String,
     pub wake_word_cancel: String,
     pub wake_word_validate: String,
     pub wake_word_submit: String,
@@ -143,7 +137,6 @@ impl Default for VoiceModeSettings {
         Self {
             wake_word_enabled: false,
             wake_word_record: "ok alix".to_string(),
-            wake_word_command: "alix command".to_string(),
             wake_word_cancel: "alix cancel".to_string(),
             wake_word_validate: "alix validate".to_string(),
             wake_word_submit: "thank you alix".to_string(),
@@ -186,15 +179,6 @@ impl Default for SmartMicSettings {
 pub struct ShortcutSettings {
     pub record_shortcut: String,
     pub last_transcript_shortcut: String,
-    pub command_shortcut: String,
-    pub llm_mode_1_shortcut: String,
-    pub llm_mode_2_shortcut: String,
-    pub llm_mode_3_shortcut: String,
-    pub llm_mode_4_shortcut: String,
-    pub llm_transform_1_shortcut: String,
-    pub llm_transform_2_shortcut: String,
-    pub llm_transform_3_shortcut: String,
-    pub llm_transform_4_shortcut: String,
     pub voice_mode_toggle_shortcut: String,
     pub cancel_shortcut: String,
 }
@@ -204,15 +188,6 @@ impl Default for ShortcutSettings {
         Self {
             record_shortcut: "ctrl+space".to_string(),
             last_transcript_shortcut: "ctrl+shift+space".to_string(),
-            command_shortcut: "ctrl+shift+x".to_string(),
-            llm_mode_1_shortcut: "ctrl+shift+1".to_string(),
-            llm_mode_2_shortcut: "ctrl+shift+2".to_string(),
-            llm_mode_3_shortcut: "ctrl+shift+3".to_string(),
-            llm_mode_4_shortcut: "ctrl+shift+4".to_string(),
-            llm_transform_1_shortcut: "ctrl+alt+shift+1".to_string(),
-            llm_transform_2_shortcut: "ctrl+alt+shift+2".to_string(),
-            llm_transform_3_shortcut: "ctrl+alt+shift+3".to_string(),
-            llm_transform_4_shortcut: "ctrl+alt+shift+4".to_string(),
             voice_mode_toggle_shortcut: "ctrl+shift+0".to_string(),
             cancel_shortcut: "ctrl+backspace".to_string(),
         }

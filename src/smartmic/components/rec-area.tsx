@@ -1,29 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
-import type { Mode } from '../smartmic.types';
 import { t } from '../i18n';
 import { formatElapsed } from './rec-area.helpers';
 
 interface RecAreaProps {
     isRecording: boolean;
-    currentMode: Mode;
-    modeIndex: number;
-    totalModes: number;
     micLevel: number;
     onToggleRec: () => void;
     onCancelRec: () => void;
-    onModeChange: (direction: 'prev' | 'next') => void;
 }
 
-export const RecArea = ({
-    isRecording,
-    currentMode,
-    modeIndex,
-    totalModes,
-    micLevel,
-    onToggleRec,
-    onCancelRec,
-    onModeChange,
-}: RecAreaProps) => {
+export const RecArea = ({ isRecording, micLevel, onToggleRec, onCancelRec }: RecAreaProps) => {
     const recBtnRef = useRef<HTMLDivElement>(null);
     const cancelBtnRef = useRef<HTMLDivElement>(null);
     const [elapsedSec, setElapsedSec] = useState(0);
@@ -104,36 +90,17 @@ export const RecArea = ({
 
     return (
         <div className="flex items-center p-2 h-[72px] shrink-0">
-            <button
-                type="button"
-                className="w-11 h-14 flex items-center justify-center bg-[#181818] border border-[#333] rounded-lg text-[#888] text-lg cursor-pointer shrink-0 active:bg-[#2a2a2a] transition-colors duration-150"
-                style={{ touchAction: 'manipulation' }}
-                onClick={() => onModeChange('prev')}
-            >
-                &#9664;
-            </button>
             <div
                 ref={recBtnRef}
-                className="flex-1 h-14 mx-1.5 rounded-xl text-base font-semibold flex items-center justify-center gap-2 cursor-pointer relative transition-all duration-150 bg-[#1a1a2e] border-2 border-[#444] text-[#e5e5e5]"
+                className="flex-1 h-14 rounded-xl text-base font-semibold flex items-center justify-center gap-2 cursor-pointer relative transition-all duration-150 bg-[#1a1a2e] border-2 border-[#444] text-[#e5e5e5]"
                 style={{ touchAction: 'none' }}
             >
-                &#9679; REC{' '}
-                <span className="text-[13px] absolute bottom-1 right-2.5 text-[#888]">
-                    {currentMode.name} ({modeIndex + 1}/{totalModes})
-                </span>
+                &#9679; REC
                 <div
                     className="absolute bottom-0 left-0 h-[3px] bg-[#dc2626] rounded-b-[10px] transition-[width] duration-100"
                     style={{ width: `${Math.round(micLevel * 100)}%` }}
                 />
             </div>
-            <button
-                type="button"
-                className="w-11 h-14 flex items-center justify-center bg-[#181818] border border-[#333] rounded-lg text-[#888] text-lg cursor-pointer shrink-0 active:bg-[#2a2a2a] transition-colors duration-150"
-                style={{ touchAction: 'manipulation' }}
-                onClick={() => onModeChange('next')}
-            >
-                &#9654;
-            </button>
         </div>
     );
 };

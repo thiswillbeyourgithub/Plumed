@@ -1,9 +1,7 @@
 use super::audio_bridge;
 use super::input_bridge;
 use super::pairing;
-use super::types::{
-    ClientMessage, ConnectedDevice, PairedDevice, ServerMessage, SmartMicMode, SmartMicState,
-};
+use super::types::{ClientMessage, ConnectedDevice, PairedDevice, ServerMessage, SmartMicState};
 use axum::extract::ws::{Message, WebSocket};
 use log::{debug, error, info, warn};
 use std::sync::Arc;
@@ -103,13 +101,6 @@ pub async fn handle_websocket(
     let _ = socket
         .send(Message::Text(status_msg.to_json().into()))
         .await;
-
-    // Send available LLM modes
-    let llm_mode_names = crate::llm::helpers::load_llm_connect_settings(&app).mode_names();
-    let modes_msg = ServerMessage::Modes {
-        modes: llm_mode_names,
-    };
-    let _ = socket.send(Message::Text(modes_msg.to_json().into())).await;
 
     let mut is_recording = false;
     let mut last_mic_level_time = std::time::Instant::now();
@@ -278,12 +269,7 @@ async fn handle_client_message(
                 warn!("SmartMic key press failed: {}", e);
             }
         }
-        ClientMessage::RecStart {
-            mode,
-            paste,
-            lang_a,
-            lang_b,
-        } => {
+        ClientMessage::RecStart { paste } => {
             let paste = *paste;
             *is_recording = true;
             // Clear buffer
@@ -291,21 +277,13 @@ async fn handle_client_message(
                 let mut buffer = state.recording_buffer.lock();
                 buffer.clear();
             }
-            // Set mode and paste flag
-            {
-                let mut rec_mode = state.recording_mode.lock();
-                *rec_mode = SmartMicMode::from_client(mode, lang_a.clone(), lang_b.clone());
-            }
             state
                 .paste_enabled
                 .store(paste, std::sync::atomic::Ordering::SeqCst);
 
             let status_msg = ServerMessage::Status { recording: true };
             let _ = tx.try_send(status_msg.to_json());
-            info!(
-                "SmartMic recording started (mode: {}, paste: {})",
-                mode, paste
-            );
+            info!("SmartMic recording started (paste: {})", paste);
         }
         ClientMessage::RecStop => {
             *is_recording = false;
@@ -343,38 +321,6 @@ async fn handle_client_message(
     }
 }
 
-/// Map a language code to its English name for translation prompts.
-fn lang_code_to_name(code: &str) -> &'static str {
-    match code {
-        "bg" => "Bulgarian",
-        "hr" => "Croatian",
-        "cs" => "Czech",
-        "da" => "Danish",
-        "nl" => "Dutch",
-        "en" => "English",
-        "et" => "Estonian",
-        "fi" => "Finnish",
-        "fr" => "French",
-        "de" => "German",
-        "el" => "Greek",
-        "hu" => "Hungarian",
-        "it" => "Italian",
-        "lv" => "Latvian",
-        "lt" => "Lithuanian",
-        "mt" => "Maltese",
-        "pl" => "Polish",
-        "pt" => "Portuguese",
-        "ro" => "Romanian",
-        "ru" => "Russian",
-        "sk" => "Slovak",
-        "sl" => "Slovenian",
-        "es" => "Spanish",
-        "sv" => "Swedish",
-        "uk" => "Ukrainian",
-        _ => "Unknown",
-    }
-}
-
 fn finalize_and_process(
     app: &Arc<tauri::AppHandle>,
     state: &SmartMicState,
@@ -390,20 +336,14 @@ fn finalize_and_process(
         return;
     }
 
-    let smartmic_mode = {
-        let mode = state.recording_mode.lock();
-        mode.clone()
-    };
-
     let sample_rate = {
         let sr = state.sample_rate.lock();
         *sr
     };
 
     info!(
-        "SmartMic recording stopped, processing {} samples (mode: {:?})",
-        buffer.len(),
-        smartmic_mode
+        "SmartMic recording stopped, processing {} samples",
+        buffer.len()
     );
 
     let app_clone = app.clone();
@@ -413,14 +353,7 @@ fn finalize_and_process(
         .load(std::sync::atomic::Ordering::SeqCst);
 
     tokio::task::spawn_blocking(move || {
-        process_recording(
-            app_clone,
-            tx_clone,
-            buffer,
-            smartmic_mode,
-            sample_rate,
-            should_paste,
-        );
+        process_recording(app_clone, tx_clone, buffer, sample_rate, should_paste);
     });
 }
 
@@ -429,25 +362,10 @@ fn process_recording(
     app: Arc<tauri::AppHandle>,
     tx: mpsc::Sender<String>,
     buffer: Vec<i16>,
-    mode: SmartMicMode,
     sample_rate: u32,
     should_paste: bool,
 ) {
     let chunks = audio_bridge::split_into_chunks(buffer, sample_rate);
-
-    // For Translation and LLM modes: always transcribe in Standard mode first,
-    // then apply the LLM prompt once on the full joined text.
-    let recording_mode = match &mode {
-        SmartMicMode::Translation { .. } | SmartMicMode::Llm(_) => {
-            crate::audio::types::RecordingMode::Standard
-        }
-        _ => mode.to_recording_mode(),
-    };
-
-    // Switch LLM mode if needed (not for Translation)
-    if let SmartMicMode::Llm(idx) = &mode {
-        crate::llm::llm::switch_active_mode(&app, *idx);
-    }
 
     // Ensure engine is loaded
     if let Err(e) = crate::audio::preload_engine(&app) {
@@ -461,8 +379,7 @@ fn process_recording(
 
     let mut parts: Vec<String> = Vec::with_capacity(chunks.len());
     for samples in chunks {
-        match crate::audio::pipeline::process_recording_from_samples(&app, samples, recording_mode)
-        {
+        match crate::audio::pipeline::process_recording_from_samples(&app, samples) {
             Ok(text) => {
                 if !text.is_empty() {
                     parts.push(text);
@@ -482,135 +399,11 @@ fn process_recording(
     let text = parts.join(" ");
     debug!("SmartMic transcription result: {}", text);
 
-    let text = if let SmartMicMode::Llm(_) = &mode {
-        match crate::audio::pipeline::apply_llm_to_full_text(&app, text.clone()) {
-            Ok(processed) => processed,
-            Err(e) => {
-                warn!(
-                    "SmartMic: LLM post-processing failed, using raw transcription: {}",
-                    e
-                );
-                text
-            }
-        }
-    } else {
-        text
-    };
-
-    let trans_msg = match &mode {
-        SmartMicMode::Translation { lang_a, lang_b } => {
-            build_translation_message(&app, text, lang_a, lang_b)
-        }
-        _ => {
-            if !text.is_empty() && should_paste {
-                if let Err(e) = crate::clipboard::paste(&text, &app) {
-                    warn!("SmartMic: Failed to paste text: {}", e);
-                }
-            }
-            ServerMessage::Transcription {
-                text,
-                detected_lang: None,
-                translated_text: None,
-                target_lang: None,
-            }
-        }
-    };
-
-    let _ = tx.try_send(trans_msg.to_json());
-}
-
-/// Build the server response for a Translation-mode recording. Asks the LLM
-/// to detect the source language among the pair AND translate to the other one
-/// in a single call. The LLM response is expected as two lines:
-///   line 1: the detected language code (either `lang_a` or `lang_b`)
-///   line 2: the translated text
-/// If the format is not respected, the full response is returned as the
-/// translation with no detected/target language.
-fn build_translation_message(
-    app: &Arc<tauri::AppHandle>,
-    text: String,
-    lang_a: &str,
-    lang_b: &str,
-) -> ServerMessage {
-    if text.trim().is_empty() {
-        return ServerMessage::Transcription {
-            text,
-            detected_lang: None,
-            translated_text: None,
-            target_lang: None,
-        };
-    }
-
-    let system_prompt = format!(
-        "You are a translator. The user's text is either in {name_a} ({lang_a}) or in {name_b} ({lang_b}). Detect which language it is, then translate it to the OTHER language.\n\nReply with EXACTLY two lines, nothing else:\nLine 1: the detected language code, either \"{lang_a}\" or \"{lang_b}\".\nLine 2: the translation.\n\nNo explanations, no quotes, no preamble, no markdown.",
-        name_a = lang_code_to_name(lang_a),
-        name_b = lang_code_to_name(lang_b),
-        lang_a = lang_a,
-        lang_b = lang_b,
-    );
-
-    let llm_response = match tauri::async_runtime::block_on(crate::llm::process_with_active_mode(
-        app,
-        system_prompt,
-        text.clone(),
-    )) {
-        Ok(resp) => {
-            debug!("SmartMic translation raw response: {}", resp);
-            Some(resp)
-        }
-        Err(e) => {
-            warn!("SmartMic translation failed: {}", e);
-            None
-        }
-    };
-
-    let (detected_lang, translated_text, target_lang) = match llm_response {
-        None => (None, None, None),
-        Some(resp) => parse_translation_response(&resp, lang_a, lang_b),
-    };
-
-    ServerMessage::Transcription {
-        text,
-        detected_lang,
-        translated_text,
-        target_lang,
-    }
-}
-
-/// Parse the two-line LLM response into (detected, translated, target).
-/// Falls back to (None, Some(full_trimmed), None) if the format is not
-/// respected or the first line does not match one of the candidate codes.
-fn parse_translation_response(
-    response: &str,
-    lang_a: &str,
-    lang_b: &str,
-) -> (Option<String>, Option<String>, Option<String>) {
-    let trimmed = response.trim();
-    if trimmed.is_empty() {
-        return (None, None, None);
-    }
-
-    if let Some((first_line, rest)) = trimmed.split_once('\n') {
-        let code = first_line.trim();
-        let translated = rest.trim().to_string();
-        if !translated.is_empty() {
-            if code == lang_a {
-                return (
-                    Some(lang_a.to_string()),
-                    Some(translated),
-                    Some(lang_b.to_string()),
-                );
-            }
-            if code == lang_b {
-                return (
-                    Some(lang_b.to_string()),
-                    Some(translated),
-                    Some(lang_a.to_string()),
-                );
-            }
+    if !text.is_empty() && should_paste {
+        if let Err(e) = crate::clipboard::paste(&text, &app) {
+            warn!("SmartMic: Failed to paste text: {}", e);
         }
     }
 
-    // Format not respected: return the raw response as translation, no detection.
-    (None, Some(trimmed.to_string()), None)
+    let _ = tx.try_send(ServerMessage::Transcription { text }.to_json());
 }

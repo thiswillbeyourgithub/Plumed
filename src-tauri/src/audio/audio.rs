@@ -1,7 +1,7 @@
 use crate::audio::clean_recording::strip_and_record;
 use crate::audio::helpers::{cleanup_recordings, ensure_recordings_dir, generate_unique_wav_name};
 use crate::audio::recorder::AudioRecorder;
-use crate::audio::types::{AudioState, RecorderStartError, RecordingMode, RecordingTrigger};
+use crate::audio::types::{AudioState, RecorderStartError, RecordingTrigger};
 use crate::audio::ChunkPipeline;
 use crate::clipboard;
 use crate::engine::ParakeetEngine;
@@ -12,17 +12,12 @@ use log::{debug, error, info, warn};
 use std::sync::Arc;
 use tauri::{AppHandle, Emitter, Manager};
 
-pub fn record_audio(app: &AppHandle, mode: RecordingMode) {
+pub fn record_audio(app: &AppHandle) {
     let state = app.state::<AudioState>();
     let my_gen = state.begin_session();
     state.set_session_active(true);
-    state.set_recording_mode(mode);
     if state.get_recording_trigger() != RecordingTrigger::WakeWord {
         state.set_recording_trigger(RecordingTrigger::Keyboard);
-    }
-
-    if matches!(mode, RecordingMode::Llm | RecordingMode::Command) {
-        crate::llm::warmup_ollama_model_background(app, mode);
     }
 
     let settings = crate::settings::load_settings(app);
@@ -205,24 +200,20 @@ fn finalize_chunked_session(
     path: &std::path::Path,
     my_gen: u64,
 ) {
-    let mode = state.get_recording_mode();
-    let _ = app.emit("llm-processing-start", ());
+    let _ = app.emit("transcription-processing-start", ());
     let accumulated = pipeline.finalize();
-    let _ = app.emit("llm-processing-end", ());
+    let _ = app.emit("transcription-processing-end", ());
 
-    match crate::audio::pipeline::merge_all_chunks(app, accumulated, path, mode) {
-        Ok(result) => {
-            let text = strip_and_record(app, state, result.text);
+    match crate::audio::pipeline::merge_all_chunks(app, accumulated, path) {
+        Ok(text) => {
+            let text = strip_and_record(app, state, text);
             if let Err(e) = write_transcription(app, &text) {
                 error!("Failed to use clipboard: {}", e);
             }
-            if result.llm_error.is_none() && state.current_session() == my_gen {
-                overlay::show_result_panel_if_allowed(app, mode.as_str(), &text, || match mode {
-                    RecordingMode::Standard | RecordingMode::Command => None,
-                    RecordingMode::Llm => crate::llm::active_prompt_name(app),
-                });
+            if state.current_session() == my_gen {
+                overlay::show_result_panel_if_allowed(app, &text);
             }
-            finish_recording_ui(app, result.llm_error);
+            reset_recording_ui(app);
         }
         Err(e) => {
             error!("Finalize failed: {}", e);
@@ -234,16 +225,6 @@ fn finalize_chunked_session(
     // owns the flag and releases it on its own stop path.
     if state.current_session() == my_gen {
         state.set_session_active(false);
-    }
-}
-
-fn finish_recording_ui(app: &AppHandle, llm_error: Option<String>) {
-    match llm_error {
-        Some(llm_err) => {
-            let _ = app.emit("llm-error", llm_err);
-            reset_recording_ui_delayed(app, 3000);
-        }
-        None => reset_recording_ui(app),
     }
 }
 
@@ -303,20 +284,6 @@ fn reset_recording_ui(app: &AppHandle) {
     if s.overlay_mode.as_str() == "recording" && !overlay::has_pending_result() {
         overlay::hide_recording_overlay(app);
     }
-}
-
-fn reset_recording_ui_delayed(app: &AppHandle, delay_ms: u64) {
-    reset_recording_state(app);
-    crate::overlay::tray::set_tray_idle(app);
-    crate::audio::streaming::reset_overlay_preview(app);
-    let app_clone = app.clone();
-    std::thread::spawn(move || {
-        std::thread::sleep(std::time::Duration::from_millis(delay_ms));
-        let s = crate::settings::load_settings(&app_clone);
-        if s.overlay_mode.as_str() == "recording" && !overlay::has_pending_result() {
-            overlay::hide_recording_overlay(&app_clone);
-        }
-    });
 }
 
 pub fn write_transcription(app: &AppHandle, transcription: &str) -> Result<()> {

@@ -1,5 +1,4 @@
 import { FormattingRule } from '@/features/personalize/formatting-rules/types';
-import { LLMConnectSettings } from '@/features/extensions/llm-connect/hooks/use-llm-connect';
 import {
     CategoryKey,
     CategoryDefinition,
@@ -11,7 +10,6 @@ import {
     ShortcutSettings,
     VoiceModeSettings,
     SmartMicSettings,
-    ExportedLlmConnect,
     AppSettings,
 } from './import-export.types';
 import { CATEGORY_DEFINITIONS, SUB_ITEM_KEY } from './import-export.constants';
@@ -92,7 +90,6 @@ export const extractVoiceMode = (all: AppSettings): VoiceModeSettings => {
     return {
         wake_word_enabled: all.wake_word_enabled,
         wake_word_record: all.wake_word_record,
-        wake_word_command: all.wake_word_command,
         wake_word_cancel: all.wake_word_cancel,
         wake_word_validate: all.wake_word_validate,
         wake_word_submit: all.wake_word_submit,
@@ -118,30 +115,8 @@ export const extractShortcuts = (all: AppSettings): ShortcutSettings => {
     return {
         record_shortcut: all.record_shortcut,
         last_transcript_shortcut: all.last_transcript_shortcut,
-        command_shortcut: all.command_shortcut,
-        llm_mode_1_shortcut: all.llm_mode_1_shortcut,
-        llm_mode_2_shortcut: all.llm_mode_2_shortcut,
-        llm_mode_3_shortcut: all.llm_mode_3_shortcut,
-        llm_mode_4_shortcut: all.llm_mode_4_shortcut,
-        llm_transform_1_shortcut: all.llm_transform_1_shortcut,
-        llm_transform_2_shortcut: all.llm_transform_2_shortcut,
-        llm_transform_3_shortcut: all.llm_transform_3_shortcut,
-        llm_transform_4_shortcut: all.llm_transform_4_shortcut,
         voice_mode_toggle_shortcut: all.voice_mode_toggle_shortcut,
         cancel_shortcut: all.cancel_shortcut,
-    };
-};
-
-export const extractLlmConnect = (raw: LLMConnectSettings): ExportedLlmConnect => {
-    return {
-        url: raw.url,
-        remote_url: raw.remote_url,
-        remote_privacy_acknowledged: raw.remote_privacy_acknowledged,
-        onboarding_completed: raw.onboarding_completed,
-        enabled: raw.enabled,
-        modes: raw.modes,
-        active_mode_index: raw.active_mode_index,
-        command: raw.command,
     };
 };
 
@@ -150,12 +125,6 @@ const buildCategorySubItems = (def: CategoryDefinition, categories: ExportedCate
         return buildSubItems(
             categories.formatting_rules.rules.map((r) => SUB_ITEM_KEY.rule(r.id)),
             ['built_in']
-        );
-    }
-    if (def.key === 'llm_connect' && categories.llm_connect != null) {
-        return buildSubItems(
-            categories.llm_connect.modes.map((_, i) => SUB_ITEM_KEY.mode(i)),
-            categories.llm_connect.command == null ? ['connection'] : ['connection', 'command']
         );
     }
     if (def.key === 'dictionary' && categories.dictionary != null) {
@@ -184,25 +153,6 @@ const filterFormattingRules = (
     rules: formattingRules.rules.filter((rule) => subItems[SUB_ITEM_KEY.rule(rule.id)] === true),
 });
 
-const filterLlmConnect = (llmConnect: ExportedLlmConnect, subItems: Record<string, boolean>): ExportedLlmConnect => {
-    const includeConnection = subItems.connection === true;
-    const includeCommand = subItems.command === true;
-    const filteredModes = llmConnect.modes.filter((_, index) => subItems[SUB_ITEM_KEY.mode(index)] === true);
-
-    const newActiveIndex = Math.max(0, filteredModes.indexOf(llmConnect.modes[llmConnect.active_mode_index]));
-
-    return {
-        url: includeConnection ? llmConnect.url : undefined,
-        remote_url: includeConnection ? llmConnect.remote_url : undefined,
-        remote_privacy_acknowledged: includeConnection ? llmConnect.remote_privacy_acknowledged : undefined,
-        onboarding_completed: includeConnection ? llmConnect.onboarding_completed : undefined,
-        enabled: filteredModes.length > 0 ? llmConnect.enabled : undefined,
-        modes: filteredModes,
-        active_mode_index: filteredModes.length > 0 ? newActiveIndex : 0,
-        command: includeCommand ? llmConnect.command : undefined,
-    };
-};
-
 export const buildFilteredCategories = (
     categories: ExportedCategories,
     selection: CategorySelection
@@ -226,9 +176,6 @@ export const buildFilteredCategories = (
             selection.formatting_rules.subItems
         );
     }
-    if (selection.llm_connect?.selected && categories.llm_connect != null) {
-        filtered.llm_connect = filterLlmConnect(categories.llm_connect, selection.llm_connect.subItems);
-    }
     if (selection.dictionary?.selected && categories.dictionary != null) {
         const subItems = selection.dictionary.subItems;
         filtered.dictionary = categories.dictionary.filter((word) => subItems[SUB_ITEM_KEY.word(word)] === true);
@@ -245,9 +192,6 @@ export const getCounters = (categories: ExportedCategories): Partial<Record<Cate
     }
     if (categories.dictionary != null) {
         counters.dictionary = categories.dictionary.length;
-    }
-    if (categories.llm_connect != null) {
-        counters.llm_connect = categories.llm_connect.modes.length;
     }
 
     return counters;

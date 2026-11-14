@@ -20,16 +20,6 @@ pub(super) fn parse_file_arg(args: &[String], keyword: &str) -> Option<String> {
     Some(file_path.clone())
 }
 
-pub(super) fn parse_llm_mode(value: &str) -> Result<u8, String> {
-    match value.parse::<u8>() {
-        Ok(n) if (1..=4).contains(&n) => Ok(n),
-        _ => Err(format!(
-            "Error: Invalid prompt '{}'. Must be 1, 2, 3, or 4.",
-            value
-        )),
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -46,19 +36,5 @@ mod tests {
     fn test_parse_strategy_invalid() {
         assert!(parse_strategy("foo").is_err());
         assert!(parse_strategy("").is_err());
-    }
-
-    #[test]
-    fn test_parse_llm_mode_valid() {
-        assert_eq!(parse_llm_mode("1"), Ok(1));
-        assert_eq!(parse_llm_mode("4"), Ok(4));
-    }
-
-    #[test]
-    fn test_parse_llm_mode_invalid() {
-        assert!(parse_llm_mode("0").is_err());
-        assert!(parse_llm_mode("5").is_err());
-        assert!(parse_llm_mode("abc").is_err());
-        assert!(parse_llm_mode("").is_err());
     }
 }

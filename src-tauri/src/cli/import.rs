@@ -6,10 +6,8 @@ use tauri::{AppHandle, Emitter, Manager};
 use super::types::{ImportStrategy, MurmureExportData};
 use crate::dictionary::Dictionary;
 use crate::formatting_rules::types::FormattingSettings;
-use crate::llm::types::LLMConnectSettings;
 
 const MAX_SUPPORTED_VERSION: u32 = 1;
-const MAX_LLM_MODES: usize = 4;
 
 fn validate_extension(file_path: &str) -> Result<(), String> {
     let path = Path::new(file_path);
@@ -26,7 +24,6 @@ fn category_display_name(key: &str) -> &str {
         "voice_mode" => "Voice Mode",
         "smartmic" => "SmartMic",
         "formatting_rules" => "Formatting Rules",
-        "llm_connect" => "Prompt Mode",
         "dictionary" => "Dictionary",
         _ => key,
     }
@@ -95,15 +92,6 @@ pub fn execute_import(
         if let Some(ref sc) = data.categories.shortcuts {
             current.record_shortcut = sc.record_shortcut.clone();
             current.last_transcript_shortcut = sc.last_transcript_shortcut.clone();
-            current.command_shortcut = sc.command_shortcut.clone();
-            current.llm_mode_1_shortcut = sc.llm_mode_1_shortcut.clone();
-            current.llm_mode_2_shortcut = sc.llm_mode_2_shortcut.clone();
-            current.llm_mode_3_shortcut = sc.llm_mode_3_shortcut.clone();
-            current.llm_mode_4_shortcut = sc.llm_mode_4_shortcut.clone();
-            current.llm_transform_1_shortcut = sc.llm_transform_1_shortcut.clone();
-            current.llm_transform_2_shortcut = sc.llm_transform_2_shortcut.clone();
-            current.llm_transform_3_shortcut = sc.llm_transform_3_shortcut.clone();
-            current.llm_transform_4_shortcut = sc.llm_transform_4_shortcut.clone();
             current.voice_mode_toggle_shortcut = sc.voice_mode_toggle_shortcut.clone();
             current.cancel_shortcut = sc.cancel_shortcut.clone();
             imported_categories.push("shortcuts");
@@ -112,7 +100,6 @@ pub fn execute_import(
         if let Some(ref vm) = data.categories.voice_mode {
             current.wake_word_enabled = vm.wake_word_enabled;
             current.wake_word_record = vm.wake_word_record.clone();
-            current.wake_word_command = vm.wake_word_command.clone();
             current.wake_word_cancel = vm.wake_word_cancel.clone();
             current.wake_word_validate = vm.wake_word_validate.clone();
             current.wake_word_submit = vm.wake_word_submit.clone();
@@ -139,15 +126,6 @@ pub fn execute_import(
     if let Some(ref imported) = data.categories.formatting_rules {
         apply_formatting_rules(app, imported, strategy)?;
         imported_categories.push("formatting_rules");
-    }
-
-    if let Some(ref imported) = data.categories.llm_connect {
-        let raw = serde_json::from_str::<serde_json::Value>(&content).ok();
-        let imported_json = raw
-            .as_ref()
-            .and_then(|value| value.pointer("/categories/llm_connect"));
-        apply_llm_connect(app, imported, imported_json, strategy)?;
-        imported_categories.push("llm_connect");
     }
 
     if let Some(ref imported) = data.categories.dictionary {
@@ -240,87 +218,6 @@ fn apply_formatting_rules(
     Ok(())
 }
 
-fn apply_llm_connect(
-    app: &AppHandle,
-    imported: &LLMConnectSettings,
-    imported_json: Option<&serde_json::Value>,
-    strategy: &ImportStrategy,
-) -> Result<(), String> {
-    let has_command_key = imported_json.is_some_and(|value| value.get("command").is_some());
-    let has_enabled_key = imported_json.is_some_and(|value| value.get("enabled").is_some());
-    let mut imported = imported.clone();
-    crate::llm::helpers::migrate_missing_keys(&mut imported, imported_json);
-
-    match strategy {
-        ImportStrategy::Replace => {
-            let mut settings = imported;
-            settings.model = String::new();
-            settings.prompt = String::new();
-            crate::llm::helpers::save_llm_connect_settings(app, &settings)?;
-        }
-        ImportStrategy::Merge => {
-            let current = crate::llm::helpers::load_llm_connect_settings(app);
-
-            let existing_names: Vec<String> = current
-                .modes
-                .iter()
-                .map(|m| m.name.to_lowercase())
-                .collect();
-
-            let mut merged_modes = current.modes.clone();
-            for mode in &imported.modes {
-                if existing_names.contains(&mode.name.to_lowercase()) {
-                    continue;
-                }
-                if merged_modes.len() >= MAX_LLM_MODES {
-                    break;
-                }
-                merged_modes.push(mode.clone());
-            }
-
-            let url = if imported.url.is_empty() {
-                current.url.clone()
-            } else {
-                imported.url.clone()
-            };
-
-            let remote_url = if imported.remote_url.is_empty() {
-                current.remote_url.clone()
-            } else {
-                imported.remote_url.clone()
-            };
-
-            let command = if has_command_key {
-                imported.command.clone()
-            } else {
-                current.command.clone()
-            };
-
-            let settings = LLMConnectSettings {
-                url,
-                model: current.model.clone(),
-                prompt: current.prompt.clone(),
-                modes: merged_modes,
-                active_mode_index: current.active_mode_index,
-                onboarding_completed: imported.onboarding_completed,
-                enabled: merge_enabled(current.enabled, &imported, has_enabled_key),
-                remote_url,
-                remote_privacy_acknowledged: imported.remote_privacy_acknowledged,
-                command,
-            };
-            crate::llm::helpers::save_llm_connect_settings(app, &settings)?;
-        }
-    }
-    Ok(())
-}
-
-fn merge_enabled(current: bool, imported: &LLMConnectSettings, has_enabled_key: bool) -> bool {
-    match (has_enabled_key, imported.modes.is_empty()) {
-        (false, true) => current,
-        _ => imported.enabled,
-    }
-}
-
 fn apply_dictionary(
     app: &AppHandle,
     imported: &[String],
@@ -366,10 +263,7 @@ pub fn apply_hot_reload_side_effects(app: &AppHandle) {
         log::set_max_level(level);
     }
 
-    let llm_settings = crate::llm::helpers::load_llm_connect_settings(app);
-    let _ = app.emit("llm-settings-updated", &llm_settings);
-
-    crate::llm::helpers::restart_wake_word_if_active(app);
+    crate::commands::wake_word::restart_listener_if_active(app, &settings);
 
     match crate::dictionary::store::load(app) {
         Ok(dict) => {
@@ -453,38 +347,6 @@ mod tests {
         assert_eq!(merged, vec!["Kubernetes".to_string()]);
     }
 
-    fn imported_with_modes(enabled: bool) -> LLMConnectSettings {
-        LLMConnectSettings {
-            enabled,
-            modes: vec![crate::llm::types::LLMMode {
-                name: "General".to_string(),
-                prompt: String::new(),
-                model: String::new(),
-                provider: Default::default(),
-                wake_word: String::new(),
-            }],
-            ..Default::default()
-        }
-    }
-
-    #[test]
-    fn test_merge_enabled_keeps_current_without_key_and_modes() {
-        let imported = LLMConnectSettings::default();
-        assert!(merge_enabled(true, &imported, false));
-    }
-
-    #[test]
-    fn test_merge_enabled_uses_imported_when_key_present() {
-        let imported = LLMConnectSettings::default();
-        assert!(!merge_enabled(true, &imported, true));
-    }
-
-    #[test]
-    fn test_merge_enabled_uses_imported_when_modes_present() {
-        assert!(!merge_enabled(true, &imported_with_modes(false), false));
-        assert!(merge_enabled(false, &imported_with_modes(true), false));
-    }
-
     #[test]
     fn test_parse_export_migrates_legacy_none_paste_method() {
         let content = r#"{
@@ -512,6 +374,7 @@ mod tests {
             "categories": {
                 "settings": { "api_enabled": true, "api_port": 4900, "sound_volume": 42 },
                 "shortcuts": { "command_shortcut": "ctrl+shift+x", "llm_mode_1_shortcut": "ctrl+shift+1" },
+                "voice_mode": { "wake_word_command": "alix command", "wake_word_record": "ok alix" },
                 "llm_connect": { "url": "http://localhost:11434/api", "modes": [] }
             }
         }"#;
@@ -520,6 +383,10 @@ mod tests {
 
         assert_eq!(data.categories.settings.unwrap().sound_volume, 42);
         assert!(data.categories.shortcuts.is_some());
+        assert_eq!(
+            data.categories.voice_mode.unwrap().wake_word_record,
+            "ok alix"
+        );
     }
 
     #[test]
@@ -530,7 +397,6 @@ mod tests {
             category_display_name("formatting_rules"),
             "Formatting Rules"
         );
-        assert_eq!(category_display_name("llm_connect"), "Prompt Mode");
         assert_eq!(category_display_name("dictionary"), "Dictionary");
         assert_eq!(category_display_name("unknown"), "unknown");
     }

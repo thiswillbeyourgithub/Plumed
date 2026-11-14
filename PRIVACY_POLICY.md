@@ -9,7 +9,7 @@ Murmure is a privacy-first, open-source speech-to-text desktop application. It i
 - Murmure does **not** include analytics or telemetry.
 - Your audio and transcriptions are processed **locally** on your device.
 - Murmure stores only what it needs to operate (settings, custom words/rules). No transcription is written to disk by default.
-- On startup, Murmure checks for updates by contacting the configured updater endpoint (currently hosted on GitHub). Other network features are opt-in (downloading updates or connecting to an LLM endpoint you configured).
+- On startup, Murmure checks for updates by contacting the configured updater endpoint (currently hosted on GitHub). Downloading updates is opt-in.
 
 ## What Murmure does not do
 
@@ -24,7 +24,6 @@ Murmure stores the following locally in the app's data directory:
 - **Settings** (shortcuts, display settings, language)
 - **Custom dictionary words**
 - **Formatting rules**
-- **LLM Connect configuration** (endpoint URLs, mode names, prompts). API keys are stored separately in your operating system's secure keyring (Apple Keychain, Windows Credential Manager, or Linux Secret Service) and are **never written to configuration files**.
 - **Application logs** (do not contain transcriptions by default)
 
 By default, **no transcription is persisted to disk**. Transcription history is kept in memory only and is cleared when the application closes. If you explicitly enable the "Persist history" option, the last 5 transcriptions will be saved on disk in the app's data directory.
@@ -41,9 +40,7 @@ When disabled (default), Murmure does not listen to your microphone outside of a
 
 ## Settings import/export
 
-Murmure allows exporting and importing settings as `.murmure` files. These files may contain: system settings, shortcuts, formatting rules, LLM Connect configuration (endpoint URLs, modes, prompts), and dictionary words.
-
-**API keys are never included** in exported files. They remain in your operating system's secure keyring.
+Murmure allows exporting and importing settings as `.murmure` files. These files may contain: system settings, shortcuts, formatting rules, and dictionary words.
 
 ## Network usage
 
@@ -55,15 +52,8 @@ Murmure may access the network only for:
 
 - **Checking for updates** (runs automatically on launch; currently not disableable in-app)
 - **Downloading and installing updates** (only when you choose to install an update)
-- **Connecting to an LLM endpoint** (e.g., a local Ollama server, or a remote OpenAI-compatible server you configured)
 
 The update check does not include your audio or transcriptions.
-
-When connecting to an LLM endpoint, Murmure sends the text you ask it to process (e.g., transcriptions and your prompt) to the URL you configured. If that URL points to a remote server, your transcription data will be sent to that server. To protect your data:
-
-- Murmure **blocks sending API keys over unencrypted HTTP** connections — only HTTPS or local/private addresses are allowed when an API key is configured.
-- During setup, Murmure displays a **clear warning** that your transcriptions will be sent to the remote server for processing.
-- The recommended default setup uses a **local** LLM server (e.g., Ollama) where no data leaves your device.
 
 Third-party policy (GitHub): [GitHub Privacy Statement](https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement)
 

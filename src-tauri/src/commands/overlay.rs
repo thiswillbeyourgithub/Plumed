@@ -1,19 +1,7 @@
-use crate::audio::types::AudioState;
 use crate::overlay::overlay::{FinalResultPayload, PendingFlashState};
 use crate::settings;
 use serde::Serialize;
 use tauri::{command, AppHandle, Emitter, Manager};
-
-#[command]
-pub fn get_recording_mode(app: AppHandle) -> String {
-    let state = app.state::<AudioState>();
-    state.get_recording_mode().as_str().to_string()
-}
-
-#[command]
-pub fn get_active_llm_prompt_name(app: AppHandle) -> Option<String> {
-    crate::llm::active_prompt_name(&app)
-}
 
 #[command]
 pub fn get_streaming_preview(app: AppHandle) -> Result<bool, String> {

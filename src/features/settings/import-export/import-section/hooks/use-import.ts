@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
-import { toast } from 'react-toastify';
 import { useTranslation } from '@/i18n';
 import { CURRENT_MURMURE_FORMAT_VERSION, CATEGORY_DEFINITIONS } from '../../import-export.constants';
 import {
@@ -20,7 +19,6 @@ const CATEGORY_LABEL_KEYS: Record<CategoryKey, string> = {
     shortcuts: 'Importing shortcuts...',
     voice_mode: 'Importing Voice Mode settings...',
     smartmic: 'Importing SmartMic settings...',
-    llm_connect: 'Importing Prompt Mode settings...',
     settings: 'Importing system settings...',
 };
 
@@ -176,12 +174,7 @@ export const useImport = () => {
             await new Promise((r) => setTimeout(r, 200));
 
             try {
-                const skipped = await applySingleCategory(categoryKey, filteredCategories, strategies);
-                if (skipped > 0) {
-                    toast.warning(
-                        t('{{count}} prompt(s) could not be imported (limit of 4 reached).', { count: skipped })
-                    );
-                }
+                await applySingleCategory(categoryKey, filteredCategories, strategies);
                 imported.push(label);
                 steps[stepIndex] = { ...steps[stepIndex], status: 'done' };
             } catch (error) {

@@ -1,6 +1,5 @@
 import type { ComponentType, ReactNode } from 'react';
 import { BuiltInOptions, FormattingRule } from '@/features/personalize/formatting-rules/types';
-import { LLMCommandSettings, LLMMode } from '@/features/extensions/llm-connect/hooks/use-llm-connect';
 
 export type {
     SystemSettings,
@@ -13,10 +12,7 @@ import type { SystemSettings, ShortcutSettings, VoiceModeSettings, SmartMicSetti
 
 export type ExportedSystemSettings = Omit<
     SystemSettings,
-    | 'wayland_notice_dismissed'
-    | 'wayland_clipboard_fallback_dismissed'
-    | 'keep_recordings'
-    | 'remove_hesitations'
+    'wayland_notice_dismissed' | 'wayland_clipboard_fallback_dismissed' | 'keep_recordings' | 'remove_hesitations'
 >;
 
 export interface MurmureExportData {
@@ -32,7 +28,6 @@ export interface ExportedCategories {
     voice_mode?: VoiceModeSettings;
     smartmic?: SmartMicSettings;
     formatting_rules?: ExportedFormattingSettings;
-    llm_connect?: ExportedLlmConnect;
     dictionary?: string[];
 }
 
@@ -41,25 +36,7 @@ export interface ExportedFormattingSettings {
     rules: FormattingRule[];
 }
 
-export interface ExportedLlmConnect {
-    url?: string;
-    remote_url?: string;
-    remote_privacy_acknowledged?: boolean;
-    onboarding_completed?: boolean;
-    enabled?: boolean;
-    modes: LLMMode[];
-    active_mode_index: number;
-    command?: LLMCommandSettings;
-}
-
-export type CategoryKey =
-    | 'settings'
-    | 'shortcuts'
-    | 'voice_mode'
-    | 'smartmic'
-    | 'formatting_rules'
-    | 'llm_connect'
-    | 'dictionary';
+export type CategoryKey = 'settings' | 'shortcuts' | 'voice_mode' | 'smartmic' | 'formatting_rules' | 'dictionary';
 
 export type ImportStrategy = 'replace' | 'merge';
 

@@ -28,17 +28,7 @@ export const ExtensionEnableAction = ({
 
     return (
         <div className="flex flex-col items-center gap-3 py-3 md:py-4">
-            <Page.PrimaryButton
-                onClick={onEnable}
-                disabled={disabled}
-                data-testid={testId}
-                className={clsx(
-                    colorScheme === 'command' &&
-                        'from-orange-800 via-orange-700 to-orange-800 hover:from-orange-700 hover:via-orange-700 hover:to-orange-700',
-                    colorScheme === 'llm' &&
-                        'from-violet-800 via-violet-700 to-violet-800 hover:from-violet-700 hover:via-violet-700 hover:to-violet-700'
-                )}
-            >
+            <Page.PrimaryButton onClick={onEnable} disabled={disabled} data-testid={testId}>
                 <Icon className="w-4 h-4" />
                 {label}
             </Page.PrimaryButton>

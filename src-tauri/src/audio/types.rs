@@ -24,7 +24,6 @@ pub struct AudioState {
     pub recorder: Mutex<Option<AudioRecorder>>,
     pub engine: Mutex<Option<ParakeetEngine>>,
     pub current_file_name: Mutex<Option<String>>,
-    recording_mode: AtomicU8,
     recording_trigger: AtomicU8,
     /// Cached audio input device to avoid re-enumerating devices on each recording
     pub cached_device: Mutex<Option<Device>>,
@@ -39,37 +38,8 @@ pub struct AudioState {
     session_gen: AtomicU64,
     /// Spans the whole session, from the record request to the end of
     /// post-processing. Unlike `recorder`, reading it never blocks on the
-    /// microphone init and it stays true while the LLM finalizes.
+    /// microphone init and it stays true while the transcript is post-processed.
     session_active: AtomicBool,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[repr(u8)]
-pub enum RecordingMode {
-    Standard = 0,
-    Llm = 1,
-    Command = 2,
-}
-
-impl RecordingMode {
-    pub const fn as_str(self) -> &'static str {
-        match self {
-            RecordingMode::Standard => "standard",
-            RecordingMode::Llm => "llm",
-            RecordingMode::Command => "command",
-        }
-    }
-}
-
-impl From<u8> for RecordingMode {
-    fn from(val: u8) -> Self {
-        match val {
-            0 => RecordingMode::Standard,
-            1 => RecordingMode::Llm,
-            2 => RecordingMode::Command,
-            _ => RecordingMode::Standard,
-        }
-    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -94,7 +64,6 @@ impl AudioState {
             recorder: Mutex::new(None),
             engine: Mutex::new(None),
             current_file_name: Mutex::new(None),
-            recording_mode: AtomicU8::new(RecordingMode::Standard as u8),
             recording_trigger: AtomicU8::new(RecordingTrigger::Keyboard as u8),
             cached_device: Mutex::new(None),
             strip_word: Mutex::new(None),
@@ -126,14 +95,6 @@ impl AudioState {
 
     pub fn is_session_active(&self) -> bool {
         self.session_active.load(Ordering::SeqCst)
-    }
-
-    pub fn set_recording_mode(&self, mode: RecordingMode) {
-        self.recording_mode.store(mode as u8, Ordering::SeqCst);
-    }
-
-    pub fn get_recording_mode(&self) -> RecordingMode {
-        self.recording_mode.load(Ordering::SeqCst).into()
     }
 
     pub fn set_recording_trigger(&self, trigger: RecordingTrigger) {

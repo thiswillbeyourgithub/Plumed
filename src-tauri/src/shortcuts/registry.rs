@@ -30,11 +30,6 @@ impl ShortcutRegistry {
             activation_mode.clone(),
         );
         push_if_set(
-            &settings.command_shortcut,
-            ShortcutAction::StartRecordingCommand,
-            activation_mode.clone(),
-        );
-        push_if_set(
             &settings.last_transcript_shortcut,
             ShortcutAction::PasteLastTranscript,
             ActivationMode::PushToTalk,
@@ -44,36 +39,6 @@ impl ShortcutRegistry {
             ShortcutAction::CancelRecording,
             ActivationMode::PushToTalk,
         );
-
-        let mode_shortcuts = [
-            (&settings.llm_mode_1_shortcut, 0),
-            (&settings.llm_mode_2_shortcut, 1),
-            (&settings.llm_mode_3_shortcut, 2),
-            (&settings.llm_mode_4_shortcut, 3),
-        ];
-
-        for (shortcut_str, index) in mode_shortcuts {
-            push_if_set(
-                shortcut_str,
-                ShortcutAction::StartRecordingLlmMode(index),
-                activation_mode.clone(),
-            );
-        }
-
-        let transform_shortcuts = [
-            (&settings.llm_transform_1_shortcut, 0),
-            (&settings.llm_transform_2_shortcut, 1),
-            (&settings.llm_transform_3_shortcut, 2),
-            (&settings.llm_transform_4_shortcut, 3),
-        ];
-
-        for (shortcut_str, index) in transform_shortcuts {
-            push_if_set(
-                shortcut_str,
-                ShortcutAction::TransformSelectionLlmMode(index),
-                ActivationMode::PushToTalk,
-            );
-        }
 
         push_if_set(
             &settings.voice_mode_toggle_shortcut,
@@ -89,12 +54,7 @@ impl ShortcutRegistry {
     }
 
     fn is_global(action: &ShortcutAction) -> bool {
-        matches!(
-            action,
-            ShortcutAction::StartRecording
-                | ShortcutAction::StartRecordingCommand
-                | ShortcutAction::StartRecordingLlmMode(_)
-        )
+        matches!(action, ShortcutAction::StartRecording)
     }
 
     fn activation_mode_for(&self, action: &ShortcutAction) -> ActivationMode {
@@ -240,19 +200,6 @@ mod tests {
         let binding = find(&registry, &ShortcutAction::CancelRecording).unwrap();
         assert_eq!(binding.keys, keys);
         assert_eq!(binding.activation_mode, ActivationMode::PushToTalk);
-    }
-
-    #[test]
-    fn from_settings_registers_transform_bindings() {
-        let settings = AppSettings::default();
-        let registry = ShortcutRegistry::from_settings(&settings);
-
-        let transform = find(&registry, &ShortcutAction::TransformSelectionLlmMode(0)).unwrap();
-        assert_eq!(
-            transform.keys,
-            parse_binding_keys(&settings.llm_transform_1_shortcut)
-        );
-        assert_eq!(transform.activation_mode, ActivationMode::PushToTalk);
     }
 
     #[test]

@@ -26,15 +26,6 @@ pub struct OnboardingState {
 pub struct AppSettings {
     pub record_shortcut: String,
     pub last_transcript_shortcut: String,
-    pub command_shortcut: String,
-    pub llm_mode_1_shortcut: String,
-    pub llm_mode_2_shortcut: String,
-    pub llm_mode_3_shortcut: String,
-    pub llm_mode_4_shortcut: String,
-    pub llm_transform_1_shortcut: String,
-    pub llm_transform_2_shortcut: String,
-    pub llm_transform_3_shortcut: String,
-    pub llm_transform_4_shortcut: String,
     pub voice_mode_toggle_shortcut: String,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub dictionary: Vec<String>,
@@ -60,7 +51,6 @@ pub struct AppSettings {
     pub keep_recordings: bool,
     pub wake_word_enabled: bool,
     pub wake_word_record: String,
-    pub wake_word_command: String,
     pub wake_word_cancel: String,
     pub wake_word_validate: String,
     pub wake_word_submit: String,
@@ -80,7 +70,7 @@ pub struct AppSettings {
     pub streaming_text_width: u32,
     pub streaming_font_size: u32,
     pub streaming_max_lines: u32,
-    pub result_panel_mode: String, // "off" | "command" | "command_llm" | "all"
+    pub result_panel_mode: String, // "off" | "all"
     pub result_panel_duration_secs: u64,
     pub remove_hesitations: bool,
     // Linux only. Persists the user's dismissal of `WaylandModeNotice`
@@ -96,15 +86,6 @@ impl Default for AppSettings {
         Self {
             record_shortcut: "ctrl+space".to_string(),
             last_transcript_shortcut: "ctrl+shift+space".to_string(),
-            command_shortcut: "ctrl+shift+x".to_string(),
-            llm_mode_1_shortcut: "ctrl+shift+1".to_string(),
-            llm_mode_2_shortcut: "ctrl+shift+2".to_string(),
-            llm_mode_3_shortcut: "ctrl+shift+3".to_string(),
-            llm_mode_4_shortcut: "ctrl+shift+4".to_string(),
-            llm_transform_1_shortcut: "ctrl+alt+shift+1".to_string(),
-            llm_transform_2_shortcut: "ctrl+alt+shift+2".to_string(),
-            llm_transform_3_shortcut: "ctrl+alt+shift+3".to_string(),
-            llm_transform_4_shortcut: "ctrl+alt+shift+4".to_string(),
             voice_mode_toggle_shortcut: "ctrl+shift+0".to_string(),
             dictionary: Vec::new(),
             // Wayland CLI mode binds shortcuts at the OS level, so Murmure receives no key-release events. Push-to-talk is impossible.
@@ -171,7 +152,6 @@ impl Default for AppSettings {
             keep_recordings: false,
             wake_word_enabled: false,
             wake_word_record: "ok alix".to_string(),
-            wake_word_command: "alix command".to_string(),
             wake_word_cancel: "alix cancel".to_string(),
             wake_word_validate: "alix validate".to_string(),
             wake_word_submit: "thank you alix".to_string(),
@@ -191,7 +171,7 @@ impl Default for AppSettings {
             streaming_text_width: 450,
             streaming_font_size: 11,
             streaming_max_lines: 5,
-            result_panel_mode: "command".to_string(),
+            result_panel_mode: "off".to_string(),
             result_panel_duration_secs: 5,
             remove_hesitations: false,
             wayland_notice_dismissed: false,

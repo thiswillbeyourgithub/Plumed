@@ -9,19 +9,10 @@ Murmure expose les commandes suivantes. Chacune peut être assignée à un racco
 | Commande | Effet |
 | -------- | ----- |
 | `murmure --transcription` | Toggle la transcription standard ON/OFF |
-| `murmure --transcription-command` | Toggle la transcription en mode Command |
 | `murmure --paste-last` | Colle la dernière transcription |
 | `murmure --cancel` | Annule l'enregistrement en cours et revient en idle |
 | `murmure --voice-mode` | Toggle le Voice Mode ON/OFF |
 | `murmure --quit` | Quitte complètement Murmure |
-| `murmure --llm-mode 1` | Lance une transcription avec le prompt LLM 1 |
-| `murmure --llm-mode 2` | Lance une transcription avec le prompt LLM 2 |
-| `murmure --llm-mode 3` | Lance une transcription avec le prompt LLM 3 |
-| `murmure --llm-mode 4` | Lance une transcription avec le prompt LLM 4 |
-| `murmure --llm-transform 1` | Applique le prompt LLM 1 au texte sélectionné |
-| `murmure --llm-transform 2` | Applique le prompt LLM 2 au texte sélectionné |
-| `murmure --llm-transform 3` | Applique le prompt LLM 3 au texte sélectionné |
-| `murmure --llm-transform 4` | Applique le prompt LLM 4 au texte sélectionné |
 
 !!! warning "Limitation Push-to-talk"
     Les raccourcis personnalisés OS se déclenchent à l'appui de la touche, pas au relâchement. Seul le **mode toggle** est donc utilisable. Le Push-to-talk (maintenir pour enregistrer, relâcher pour arrêter) ne peut pas être implémenté avec des raccourcis personnalisés OS.

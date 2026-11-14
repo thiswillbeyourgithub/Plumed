@@ -2,14 +2,8 @@ import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { useEffect, useRef, useState } from 'react';
 import { clampResultPanelDurationSecs } from '../result-panel.helpers';
-import type { RecordingMode } from '../../use-recording-mode';
-
-export type ResultPanelModeName = RecordingMode | 'transform';
-
 export interface FinalResultPayload {
     text: string;
-    promptName?: string | null;
-    mode: ResultPanelModeName;
 }
 
 interface ActiveResult {
@@ -79,7 +73,7 @@ export const useResultPanel = (durationSecs: number, isConfigLoaded: boolean) =>
             .catch(() => {});
 
         const unlistenResult = listen<FinalResultPayload>('final-result', (event) => show(event.payload));
-        const unlistenRecording = listen('recording-mode', clearPanel);
+        const unlistenRecording = listen('overlay-session-start', clearPanel);
 
         return () => {
             clearHideTimer();

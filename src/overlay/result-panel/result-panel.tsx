@@ -3,15 +3,12 @@ import clsx from 'clsx';
 import { Check, Copy, X } from 'lucide-react';
 import { i18n } from '@/i18n';
 import { computeTextMaxHeightPx, LINE_HEIGHT_RATIO } from '../streaming-text/streaming-text.helpers';
-import { buildResultPanelGradient, getResultPanelPalette, RESULT_PANEL_SEGMENT_MASK } from './result-panel.helpers';
-import type { ResultPanelModeName } from './hooks/use-result-panel';
+import { buildResultPanelGradient, RESULT_PANEL_SEGMENT_MASK } from './result-panel.helpers';
 
 const SCROLL_END_TOLERANCE_PX = 1;
 
 interface ResultPanelProps {
     text: string;
-    promptName?: string | null;
-    mode: ResultPanelModeName;
     textWidth: number;
     fontSize: number;
     maxLines: number;
@@ -26,8 +23,6 @@ interface ResultPanelProps {
 
 export const ResultPanel = ({
     text,
-    promptName,
-    mode,
     textWidth,
     fontSize,
     maxLines,
@@ -41,8 +36,6 @@ export const ResultPanel = ({
 }: ResultPanelProps) => {
     const scrollRef = useRef<HTMLDivElement>(null);
     const [hasContentBelow, setHasContentBelow] = useState(false);
-    const palette = getResultPanelPalette(mode);
-    const label = mode === 'command' ? i18n.t('Command') : promptName;
 
     useLayoutEffect(() => {
         const container = scrollRef.current;
@@ -114,15 +107,6 @@ export const ResultPanel = ({
                 <X size={10} strokeWidth={2.5} />
             </button>
 
-            {label != null && label.length > 0 && (
-                <div
-                    className="truncate pb-0.5 pr-5 font-sans text-[10px] font-normal"
-                    style={{ color: palette.accent }}
-                >
-                    {label}
-                </div>
-            )}
-
             <div className="relative">
                 <div
                     ref={scrollRef}
@@ -162,7 +146,7 @@ export const ResultPanel = ({
                 <div
                     className="h-full w-full"
                     style={{
-                        backgroundImage: buildResultPanelGradient(mode),
+                        backgroundImage: buildResultPanelGradient(),
                         backgroundSize: `${textWidth}px 100%`,
                         backgroundRepeat: 'no-repeat',
                         animation: `result-panel-countdown ${durationSecs}s linear forwards`,

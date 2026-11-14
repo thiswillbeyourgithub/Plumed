@@ -59,12 +59,12 @@ Branches are created only with the user's approval. **Never open a pull request 
 | Medical regex list (UltiMed drug and term fixes, editable in an advanced panel, separate from user rules) plus InterHop dictation rules seeded as default user rules | `feat/medical-regex` | | merged | not planned (fork only, see #498) |
 | ParakeetWeb phrase boosting engine (hybrid: upstream boost for the user dictionary, ParakeetWeb trie for phrase lists, larger bonus wins where they overlap) | `feat/phrase-boosting` (from `medmain`) | | merged | |
 | French medical phrase boosting list (bundled from ParakeetWeb, armed at model load, ~2 s trie build on the startup thread) | `feat/medical-phrase-list` | `feat/phrase-boosting` | merged | |
-| Branding (name Plumed, purple theme, fork credits, local-only notice, own identifier and keyring entry, updater and winget; icon and toggles for extra regex and phrase boosting still to do) | `feat/branding` (from `medmain`) | | merged, in progress | |
+| Branding (name Plumed, purple theme, fork credits, local-only notice, own identifier, updater and winget; icon and toggles for extra regex and phrase boosting still to do) | `feat/branding` (from `medmain`) | | merged, in progress | |
 | Remote microphone through an internet relay (or iroh) | `feat/remote-mic-relay` | | idea | |
 
 Update this table when a branch is created, merged, or proposed upstream.
 
-Removed upstream features (security, for hospital use): the local HTTP API. Plumed runs on hospital computers, so features that open network access or send text off the machine are deleted outright (code, settings, CLI flags, docs), not just hidden. This is a deliberate exception to the minimal-diff rules: when merging upstream, keep these features out and resolve conflicts in their files by keeping them deleted.
+Removed upstream features (security, for hospital use): the local HTTP API, Command mode, and Prompt mode (LLM Connect: Ollama, remote LLM servers and their keyring API key, SmartMic LLM and translation modes, LLM and command wake words). Plumed runs on hospital computers, so features that open network access or send text off the machine are deleted outright (code, settings, CLI flags, docs), not just hidden. This is a deliberate exception to the minimal-diff rules: when merging upstream, keep these features out and resolve conflicts in their files by keeping them deleted.
 
 Note for `feat/medical-regex`: the `feat/regex-compile-once` cache (capped at 4096 patterns) is sized for user rules, including the 138 InterHop rules seeded by default. The ~42,000 drug and term rules do not use it: `src-tauri/src/medical/` indexes them by anchor word at startup and compiles each rule lazily, the first time a text could match it.
 
@@ -80,7 +80,7 @@ Ship the NSIS `-setup.exe` as the main Windows installer: it installs without ad
 
 ## 6. Releases
 
-Identity: the app identifier is `org.olicorne.plumed` (own settings and history folder, separate from an installed Murmure; the remote LLM API key also has its own keyring entry, `plumed`). The product name is `Plumed` and the binary `plumed` (`mainBinaryName`), so Plumed installs next to Murmure: Linux package `plumed`, `/usr/bin/plumed`, resources, ONNX Runtime and the pacman marker in `/usr/lib/Plumed/` (the binary's rpath, set in `build-linux.yml`, points there), udev rule `60-plumed-uinput.rules`, release files `Plumed_*`. Upstream's crate names (`murmure`, `murmure_lib`) and the `.murmure` config import format are kept.
+Identity: the app identifier is `org.olicorne.plumed` (own settings and history folder, separate from an installed Murmure). The product name is `Plumed` and the binary `plumed` (`mainBinaryName`), so Plumed installs next to Murmure: Linux package `plumed`, `/usr/bin/plumed`, resources, ONNX Runtime and the pacman marker in `/usr/lib/Plumed/` (the binary's rpath, set in `build-linux.yml`, points there), udev rule `60-plumed-uinput.rules`, release files `Plumed_*`. Upstream's crate names (`murmure`, `murmure_lib`) and the `.murmure` config import format are kept.
 
 Auto-updater (`plugins.updater` in `src-tauri/tauri.conf.json`): the app downloads `latest.json` from our latest GitHub release and only installs an update whose signature matches the `pubkey` in that file. One-time setup:
 
