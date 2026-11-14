@@ -118,7 +118,7 @@ export const useExport = () => {
                 title: t('Export Configuration'),
                 filters: [
                     {
-                        name: 'Murmure Config',
+                        name: 'Plumed Config',
                         extensions: ['murmure'],
                     },
                 ],

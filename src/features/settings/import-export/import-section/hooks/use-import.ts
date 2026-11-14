@@ -120,7 +120,7 @@ export const useImport = () => {
                 title: t('Select a .murmure file'),
                 filters: [
                     {
-                        name: 'Murmure Config',
+                        name: 'Plumed Config',
                         extensions: ['murmure'],
                     },
                 ],

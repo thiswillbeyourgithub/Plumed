@@ -270,7 +270,7 @@
     "One part wasn't transcribed": "Un passage n'a pas été transcrit",
     "On local WiFi only.": "Sur votre WiFi local uniquement.",
     "On Wayland, Murmure starts from a system shortcut. It takes one minute.": "Sous Wayland, Murmure se lance avec un raccourci système. Une minute suffit.",
-    "Once <cmd>murmure --transcription</cmd> works, every other command below binds the same way.": "Une fois que <cmd>murmure --transcription</cmd> fonctionne, toutes les autres commandes se lient de la même manière.",
+    "Once <cmd>plumed --transcription</cmd> works, every other command below binds the same way.": "Une fois que <cmd>plumed --transcription</cmd> fonctionne, toutes les autres commandes se lient de la même manière.",
     "Only single words or two-word pairs are allowed.": "Seuls les mots simples ou les paires de deux mots sont autorisés.",
     "Open Murmure": "Ouvrir Murmure",
     "Open Settings": "Ouvrir les paramètres",
