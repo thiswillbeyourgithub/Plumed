@@ -12,7 +12,7 @@ No. Zero telemetry, zero analytics, zero tracking. See the [Privacy Policy](http
 
 ### Does Murmure need a GPU?
 
-No. Murmure runs on CPU. A GPU is not required for transcription. However, if you use [Prompt Mode](features/llm-connect.md), a GPU significantly improves the LLM inference speed.
+No. Murmure runs on CPU. A GPU is not required for transcription.
 
 ### What languages does Murmure support?
 
@@ -43,10 +43,6 @@ This is almost always a microphone quality issue. Poor audio, background noise, 
 ### Can Murmure transcribe meetings or multiple speakers?
 
 Meeting transcription with speaker diarization (identifying who said what) is not currently supported. Murmure is designed for single-speaker dictation.
-
-### Can Murmure transcribe audio files?
-
-Yes, via the [Local API](features/api.md). Send a WAV file to the API endpoint and get the transcription back.
 
 ## Installation
 

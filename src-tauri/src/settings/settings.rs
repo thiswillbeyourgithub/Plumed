@@ -66,7 +66,7 @@ mod tests {
     fn legacy_none_paste_method_disables_auto_insert_and_keeps_other_settings() {
         for legacy in ["none", "None"] {
             let content = format!(
-                r#"{{"paste_method":"{}","copy_to_clipboard":true,"api_port":4900}}"#,
+                r#"{{"paste_method":"{}","copy_to_clipboard":true,"sound_volume":42}}"#,
                 legacy
             );
 
@@ -75,8 +75,19 @@ mod tests {
             assert_eq!(settings.paste_method, PasteMethod::CtrlV);
             assert!(!settings.auto_insert);
             assert!(settings.copy_to_clipboard);
-            assert_eq!(settings.api_port, 4900);
+            assert_eq!(settings.sound_volume, 42);
         }
+    }
+
+    #[test]
+    fn removed_feature_keys_are_ignored() {
+        // Settings files written before the local API, command mode and
+        // prompt mode were removed must still load with their other values.
+        let settings = parse_settings(
+            r#"{"api_enabled":true,"api_port":4900,"command_shortcut":"ctrl+shift+x","llm_mode_1_shortcut":"ctrl+shift+1","wake_word_command":"alix command","sound_volume":42}"#,
+        );
+
+        assert_eq!(settings.sound_volume, 42);
     }
 
     #[test]

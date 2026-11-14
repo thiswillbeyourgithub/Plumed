@@ -1,24 +1,16 @@
 use crate::audio::chunking::{ChunkPipeline, Chunker};
 use crate::audio::clean_recording::clean_transcription;
 use crate::audio::helpers::{read_wav_mono_native, resample, rms};
-use crate::audio::types::{AudioState, RecordingMode};
+use crate::audio::types::AudioState;
 use crate::dictionary::{correct_transcription, sync_boost_words, Dictionary};
 use crate::engine::transcription_engine::{TranscriptionEngine, TranscriptionResult};
 use crate::formatting_rules;
 use crate::history;
-use crate::llm::{ApiLlmRequest, ApiLlmTranscription};
 use crate::stats;
 use anyhow::Result;
 use log::{debug, error, warn};
 use std::path::Path;
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
 use tauri::{AppHandle, Emitter, Manager};
-
-pub struct ProcessingResult {
-    pub text: String,
-    pub llm_error: Option<String>,
-}
 
 pub enum ChunkOutcome {
     Text { cleaned: String, corrected: String },
@@ -99,111 +91,33 @@ pub fn process_chunk(app: &AppHandle, samples: Vec<f32>, sample_rate: u32) -> Ch
 }
 
 /// Post-processes the concatenated chunks at the end of transcription
-pub fn merge_all_chunks(
-    app: &AppHandle,
-    accumulated: String,
-    file_path: &Path,
-    mode: RecordingMode,
-) -> Result<ProcessingResult> {
-    let result = post_process_chunks(app, accumulated, mode)?;
-    if !result.text.trim().is_empty() {
-        // 8. Save stats & history
-        save_stats_and_history(app, file_path, &result.text)?;
+pub fn merge_all_chunks(app: &AppHandle, accumulated: String, file_path: &Path) -> Result<String> {
+    let text = post_process_chunks(app, accumulated);
+    if !text.trim().is_empty() {
+        // 7. Save stats & history
+        save_stats_and_history(app, file_path, &text)?;
     }
-    Ok(result)
+    Ok(text)
 }
 
-fn post_process_chunks(
-    app: &AppHandle,
-    accumulated: String,
-    mode: RecordingMode,
-) -> Result<ProcessingResult> {
+fn post_process_chunks(app: &AppHandle, accumulated: String) -> String {
     if accumulated.trim().is_empty() {
-        return Ok(ProcessingResult {
-            text: accumulated,
-            llm_error: None,
-        });
+        return accumulated;
     }
 
     // 5. Clean transcription (dedup repeats, optional hesitation removal)
     let text = clean_accumulated(app, &accumulated);
-    // 6. LLM post-processing
-    let (llm_text, llm_error) = apply_llm_processing_with_error(app, text, mode)?;
-    // 7. Apply formatting rules
-    let final_text = apply_formatting_rules(app, llm_text);
-
-    Ok(ProcessingResult {
-        text: final_text,
-        llm_error,
-    })
+    // 6. Apply formatting rules
+    apply_formatting_rules(app, text)
 }
 
 pub fn transcribe_file_chunked(app: &AppHandle, file_path: &Path) -> Result<String> {
-    let never_cancelled = Arc::new(AtomicBool::new(false));
-    transcribe_file_chunked_cancellable(app, file_path, &never_cancelled)
-        .map(|text| text.unwrap_or_default())
-}
-
-pub fn transcribe_file_chunked_cancellable(
-    app: &AppHandle,
-    file_path: &Path,
-    cancelled: &Arc<AtomicBool>,
-) -> Result<Option<String>> {
-    let Some(accumulated) = transcribe_file_raw_cancellable(app, file_path, cancelled)? else {
-        return Ok(None);
-    };
-    let result = post_process_chunks(app, accumulated, RecordingMode::Standard)?;
-    Ok(Some(result.text.trim().to_string()))
-}
-
-pub fn transcribe_file_with_llm_cancellable(
-    app: &AppHandle,
-    file_path: &Path,
-    cancelled: &Arc<AtomicBool>,
-    request: &ApiLlmRequest,
-) -> Result<Option<ApiLlmTranscription>> {
-    let Some(accumulated) = transcribe_file_raw_cancellable(app, file_path, cancelled)? else {
-        return Ok(None);
-    };
-    if accumulated.trim().is_empty() {
-        return Ok(Some(ApiLlmTranscription {
-            transcription: String::new(),
-            outcome: Ok(String::new()),
-        }));
-    }
-
-    let cleaned = clean_accumulated(app, &accumulated);
-    let transcription = apply_formatting_rules(app, cleaned.clone())
-        .trim()
-        .to_string();
-    if cancelled.load(Ordering::SeqCst) {
-        return Ok(None);
-    }
-
-    let llm =
-        tauri::async_runtime::block_on(crate::llm::process_api_request(app, request, cleaned));
-    let outcome = llm.map(|text| apply_formatting_rules(app, text).trim().to_string());
-
-    Ok(Some(ApiLlmTranscription {
-        transcription,
-        outcome,
-    }))
-}
-
-fn transcribe_file_raw_cancellable(
-    app: &AppHandle,
-    file_path: &Path,
-    cancelled: &Arc<AtomicBool>,
-) -> Result<Option<String>> {
     let (samples, sample_rate) = read_wav_mono_native(file_path)?;
     if samples.is_empty() {
         return Err(anyhow::anyhow!("Audio file contains no samples"));
     }
-    if cancelled.load(Ordering::SeqCst) {
-        return Ok(None);
-    }
 
-    let pipeline = ChunkPipeline::start_headless(app, cancelled.clone());
+    let pipeline = ChunkPipeline::start_headless(app);
     let mut chunker = Chunker::new(pipeline.sender(), sample_rate, None);
     let window = sample_rate as usize * 33 / 1000;
     for win in samples.chunks(window) {
@@ -213,11 +127,7 @@ fn transcribe_file_raw_cancellable(
     chunker.flush_remaining();
     let accumulated = pipeline.finalize();
 
-    if cancelled.load(Ordering::SeqCst) {
-        return Ok(None);
-    }
-
-    Ok(Some(accumulated))
+    Ok(post_process_chunks(app, accumulated).trim().to_string())
 }
 
 fn clean_accumulated(app: &AppHandle, accumulated: &str) -> String {
@@ -234,78 +144,6 @@ fn apply_dictionary_correction(
 ) -> Result<String> {
     let dictionary = app.state::<Dictionary>().get();
     Ok(correct_transcription(&text, &dictionary, word_confidences))
-}
-
-fn apply_llm_processing_with_error(
-    app: &AppHandle,
-    text: String,
-    mode: RecordingMode,
-) -> Result<(String, Option<String>)> {
-    match mode {
-        RecordingMode::Command => {
-            debug!("Processing audio in Command mode");
-            let selected_text = match crate::clipboard::get_selected_text(app) {
-                Ok(s) if !s.trim().is_empty() => Some(s),
-                Ok(_) => {
-                    debug!("No selection in command mode, answering the request");
-                    None
-                }
-                Err(e) => {
-                    error!("Failed to capture selected text in command mode: {}", e);
-                    None
-                }
-            };
-            let (system_prompt, user_prompt) =
-                crate::llm::build_command_prompts(&text, selected_text);
-            match tauri::async_runtime::block_on(crate::llm::process_voice_command(
-                app,
-                system_prompt,
-                user_prompt,
-            )) {
-                Ok(response) => Ok((response, None)),
-                Err(e) => {
-                    warn!(
-                        "Command LLM processing failed: {}. Using original transcription.",
-                        e
-                    );
-                    Ok((text, Some(e.to_string())))
-                }
-            }
-        }
-        RecordingMode::Llm => {
-            match tauri::async_runtime::block_on(crate::llm::post_process_with_llm(
-                app,
-                text.clone(),
-                false,
-            )) {
-                Ok(llm_text) => Ok((llm_text, None)),
-                Err(e) => {
-                    warn!(
-                        "LLM post-processing failed: {}. Using original transcription.",
-                        e
-                    );
-                    Ok((text, Some(e.to_string())))
-                }
-            }
-        }
-        RecordingMode::Standard => Ok((text, None)),
-    }
-}
-
-fn apply_llm_processing_with_mode(
-    app: &AppHandle,
-    text: String,
-    mode: RecordingMode,
-) -> Result<String> {
-    let (result, _) = apply_llm_processing_with_error(app, text, mode)?;
-    Ok(result)
-}
-
-/// Apply the active LLM mode's prompt to already-transcribed text, once.
-/// SmartMic uses this to run the prompt on the full joined transcription
-/// instead of per chunk (which would concatenate independent LLM outputs).
-pub fn apply_llm_to_full_text(app: &AppHandle, text: String) -> Result<String> {
-    apply_llm_processing_with_mode(app, text, RecordingMode::Llm)
 }
 
 fn apply_formatting_rules(app: &AppHandle, text: String) -> String {
@@ -352,11 +190,7 @@ fn save_stats_and_history(app: &AppHandle, file_path: &Path, text: &str) -> Resu
 
 /// Process a recording from raw samples (no WAV file), used by SmartMic.
 /// Bypasses file I/O and enters the pipeline directly from PCM samples.
-pub fn process_recording_from_samples(
-    app: &AppHandle,
-    samples: Vec<f32>,
-    mode: RecordingMode,
-) -> Result<String> {
+pub fn process_recording_from_samples(app: &AppHandle, samples: Vec<f32>) -> Result<String> {
     // 1. Transcribe directly from samples
     let result = transcribe_samples_direct(app, samples)?;
     let raw_text = result.text;
@@ -374,18 +208,15 @@ pub fn process_recording_from_samples(
     // 3. Dictionary correction
     let text = apply_dictionary_correction(app, text, &result.word_confidences)?;
 
-    // 4. LLM post-processing (pass mode directly, no global state mutation)
-    let llm_text = apply_llm_processing_with_mode(app, text, mode)?;
-
-    // 5. Formatting rules
-    let final_text = apply_formatting_rules(app, llm_text);
+    // 4. Formatting rules
+    let final_text = apply_formatting_rules(app, text);
 
     // Note: No save_stats_and_history (no WAV file, no duration)
     Ok(final_text)
 }
 
 fn transcribe_samples_direct(app: &AppHandle, samples: Vec<f32>) -> Result<TranscriptionResult> {
-    let _ = app.emit("llm-processing-start", ());
+    let _ = app.emit("transcription-processing-start", ());
     crate::audio::preload_engine(app)?;
     let state = app.state::<AudioState>();
 
@@ -397,10 +228,10 @@ fn transcribe_samples_direct(app: &AppHandle, samples: Vec<f32>) -> Result<Trans
     sync_boost_words(engine, &app.state::<Dictionary>().get());
 
     let result = engine.transcribe_samples(samples, None).map_err(|e| {
-        let _ = app.emit("llm-processing-end", ());
+        let _ = app.emit("transcription-processing-end", ());
         anyhow::anyhow!("Transcription failed: {}", e)
     })?;
-    let _ = app.emit("llm-processing-end", ());
+    let _ = app.emit("transcription-processing-end", ());
 
     Ok(result)
 }

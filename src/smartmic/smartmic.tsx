@@ -14,7 +14,6 @@ import { ErrorOverlay } from './components/error-overlay';
 import { DeviceConflictOverlay } from './components/device-conflict-overlay';
 import { ModeTabs } from './components/mode-tabs';
 import { TranscriptionMode } from './components/transcription-mode';
-import { TranslationMode } from './components/translation-mode';
 import { AudioVisualizer } from '@/features/home/audio-visualizer/audio-visualizer';
 import { smartMicReducer, initialState } from './store/smartmic-reducer';
 import { t } from './i18n';
@@ -33,8 +32,6 @@ export const SmartMic = () => {
 
     const statusText = connected ? t('status.connected') : t('status.connecting');
     const pcName = connected ? location.hostname : '';
-    // Keep the translation recording flag honest if `pendingTranslationPair` clears first.
-    const translationRecordingActive = state.isRecording && state.pendingTranslationPair !== null;
 
     return (
         <div className="w-full h-dvh flex flex-col bg-[#0a0a0a] text-[#e5e5e5] font-sans select-none pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
@@ -68,27 +65,12 @@ export const SmartMic = () => {
                     onClearHistory={() => dispatch({ type: 'clear_transcriptions' })}
                 />
             )}
-            {viewMode === 'translation' && (
-                <TranslationMode
-                    isRecording={translationRecordingActive}
-                    isTranslating={state.isTranslating}
-                    micLevel={state.micLevel}
-                    translationEntries={state.translationEntries}
-                    onToggleRec={rec.translationToggle}
-                />
-            )}
-            {viewMode !== 'translation' && (
-                <RecArea
-                    isRecording={state.isRecording}
-                    currentMode={state.modes[state.modeIndex]}
-                    modeIndex={state.modeIndex}
-                    totalModes={state.modes.length}
-                    micLevel={state.micLevel}
-                    onToggleRec={rec.toggle}
-                    onCancelRec={rec.cancel}
-                    onModeChange={rec.changeMode}
-                />
-            )}
+            <RecArea
+                isRecording={state.isRecording}
+                micLevel={state.micLevel}
+                onToggleRec={rec.toggle}
+                onCancelRec={rec.cancel}
+            />
             <DeviceConflictOverlay
                 deviceName={state.deviceConflict}
                 onForceConnect={() => {

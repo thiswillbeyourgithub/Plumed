@@ -7,7 +7,7 @@ La fonctionnalité principale de Murmure est la reconnaissance vocale locale, pr
 1. Vous appuyez sur le raccourci d'enregistrement
 2. L'audio est capture depuis votre microphone en WAV 16kHz mono
 3. Le modele Parakeet transcrit l'audio localement
-4. Le post-traitement est applique (dictionnaire, regles de formatage, LLM si active)
+4. Le post-traitement est applique (dictionnaire, regles de formatage)
 5. Le texte est insere dans l'application active
 
 Tout est traite sur votre CPU - pas de GPU requis, pas d'internet necessaire.

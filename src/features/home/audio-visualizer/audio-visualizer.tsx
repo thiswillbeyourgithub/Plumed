@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useLevelState } from './hooks/use-level-state';
-import { useLLMState } from './hooks/use-llm-state';
+import { useProcessingState } from './hooks/use-processing-state';
 import { cn } from '@/components/lib/utils';
 import {
     createGradient,
@@ -37,9 +37,9 @@ export const AudioVisualizer = ({
     colorScheme = 'standard',
 }: AudioVisualizerProps) => {
     const hookLevel = useLevelState();
-    const hookLLM = useLLMState();
+    const hookProcessing = useProcessingState();
     const effectiveLevel = levelProp ?? hookLevel.level;
-    const effectiveIsProcessing = isProcessingProp ?? hookLLM.isProcessing;
+    const effectiveIsProcessing = isProcessingProp ?? hookProcessing.isProcessing;
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const surfaceRef = useRef<VisualizerSurface | null>(null);
     const stateRef = useRef<VisualizerState | null>(null);

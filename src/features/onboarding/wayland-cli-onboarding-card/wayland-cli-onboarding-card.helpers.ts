@@ -1,4 +1,4 @@
-export const WAYLAND_CLI_SETUP_COMMAND = 'murmure --transcription';
+export const WAYLAND_CLI_SETUP_COMMAND = 'plumed --transcription';
 
 export const DEFAULT_SHORTCUT_PATH = 'Settings → Keyboard → Keyboard Shortcuts';
 

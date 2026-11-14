@@ -1,12 +1,10 @@
-use crate::audio::types::RecordingMode;
 use parking_lot::Mutex;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
 #[derive(Debug, Clone, Copy)]
 pub enum WakeWordAction {
-    Record(RecordingMode),
-    RecordLlmMode(usize),
+    Record,
     Cancel,
     Validate,
     Submit,

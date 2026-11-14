@@ -23,7 +23,7 @@ Smart Speech Mic turns any smartphone into a wireless microphone for Murmure. No
 
 ## Phone Views
 
-The phone web interface has three tabs at the top, each offering a different way to use Smart Speech Mic. The active view is remembered between sessions, so the phone re-opens on the last tab you used.
+The phone web interface has two tabs at the top, each offering a different way to use Smart Speech Mic. The active view is remembered between sessions, so the phone re-opens on the last tab you used.
 
 ### Remote
 
@@ -44,14 +44,6 @@ A chronological log of transcriptions displayed on the phone. Useful when you wa
 - Use **Copy all** to copy the full history at once
 - The three-dot menu lets you clear the history
 
-### Translation
-
-Bidirectional translation between two languages, displayed as chat bubbles. Pick the language pair at the top of the view, press **REC**, and speak. Each utterance is detected, translated, and displayed in the appropriate bubble side.
-
-- The selected language pair is persisted between sessions
-- Messages from each language appear on opposite sides of the conversation
-- A pulsing bubble indicates a translation in progress
-
 The phone web interface is available in several languages and follows the language of the phone's browser (you can also force one via the `?lang=` URL parameter).
 
 ## Requirements
@@ -64,7 +56,7 @@ The phone web interface is available in several languages and follows the langua
 
 - Communication is encrypted via TLS (HTTPS + WSS)
 - Self-signed certificates are generated locally
-- Device pairing uses tokens stored in your system's native keyring
+- Device pairing uses tokens stored locally on your computer
 - No data leaves your local network
 
 ## Managing Paired Devices

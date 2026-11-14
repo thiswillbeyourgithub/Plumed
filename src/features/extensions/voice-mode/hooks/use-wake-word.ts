@@ -20,11 +20,6 @@ export const WAKE_WORD_CONFIGS = {
         setCommand: 'set_wake_word_record',
         defaultWord: 'ok alix',
     },
-    command: {
-        getCommand: 'get_wake_word_command',
-        setCommand: 'set_wake_word_command',
-        defaultWord: 'alix command',
-    },
     cancel: {
         getCommand: 'get_wake_word_cancel',
         setCommand: 'set_wake_word_cancel',

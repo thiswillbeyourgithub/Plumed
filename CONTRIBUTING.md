@@ -136,16 +136,15 @@ Notes:
 
 ### Backend
 
-- `lib.rs` : Tauri app builder; initializes plugins, state, commands, shortcuts, overlay, tray, and HTTP API
+- `lib.rs` : Tauri app builder; initializes plugins, state, commands, shortcuts, overlay, and tray
 - `commands.rs` : Tauri commands exposed to the frontend (single communication layer)
 - `audio.rs` : Recording/transcription pipeline: capture audio, write WAV, run Parakeet, update history, clipboard, and paste into the active field
 - `history.rs` : Stores and manages the last 5 transcriptions (persistent) and emits updates
 - `dictionary.rs` : Dictionary pipeline: decode-time phrase boosting plus a confidence-gated spelling post-correction
 - `model.rs` : Resolves bundled Parakeet model path and checks availability
 - `overlay.rs` : Creates and manages the recording overlay (show/hide/position)
-- `settings.rs` : Loads and saves app settings (shortcuts, overlay, API) to JSON
+- `settings.rs` : Loads and saves app settings (shortcuts, overlay) to JSON
 - `tray_icon.rs` : Creates the system tray and handles menu/click events
 - `clipboard.rs` : Clipboard integration and simulated paste; restores previous clipboard content
 - `shortcuts/` : Global keyboard shortcuts (push-to-talk, last transcript, suspend), with per-OS backends
-- `http_api/` : Local HTTP API: server lifecycle, routes, and shared state
 - `engine/` : CPU transcription engine and Parakeet runtime bindings (adapted from open source)

@@ -7,7 +7,7 @@ Murmure's core feature is local speech-to-text powered by the [Parakeet ultra](h
 1. You press the recording shortcut
 2. Audio is captured from your microphone as a 16kHz mono WAV
 3. The Parakeet model transcribes the audio locally
-4. Post-processing is applied (dictionary, formatting rules, LLM if enabled)
+4. Post-processing is applied (dictionary, formatting rules)
 5. The resulting text is inserted into the focused application
 
 All processing happens on your CPU - no GPU required, no internet connection needed.

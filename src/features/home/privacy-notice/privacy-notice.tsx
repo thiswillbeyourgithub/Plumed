@@ -3,18 +3,18 @@ import { useTranslation } from '@/i18n';
 
 // Plumed fork (written with Claude Code): states on the home page that
 // medical dictation stays on the computer. Text kept here in both languages
-// so upstream locale files stay untouched. The exception is real: Prompt
-// Mode can send transcripts to a remote server the user configures (behind
-// its own privacy acknowledgment), so it must not be hidden.
+// so upstream locale files stay untouched. Prompt Mode (the only feature
+// that could send transcripts to a remote server) was removed, so there is
+// no exception left to mention.
 
 const TEXT = {
     en: {
         title: '100% local: your audio and transcripts never leave this computer.',
-        detail: 'Nothing is sent over the internet, unless you connect a remote server yourself in Extensions > Prompt Mode.',
+        detail: 'Transcription runs entirely on this computer: no cloud service, no remote AI server.',
     },
     fr: {
         title: '100 % local : votre audio et vos transcriptions ne quittent jamais cet ordinateur.',
-        detail: "Rien n'est envoyé sur internet, sauf si vous connectez vous-même un serveur distant dans Extensions > Mode Prompt.",
+        detail: "La transcription se fait entièrement sur cet ordinateur : aucun service cloud, aucun serveur d'IA distant.",
     },
 };
 

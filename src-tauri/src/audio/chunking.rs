@@ -94,19 +94,15 @@ pub struct ChunkPipeline {
 impl ChunkPipeline {
     pub fn start(app: &AppHandle, preview: Option<PreviewLink>) -> Self {
         let epoch = PIPELINE_EPOCH.fetch_add(1, Ordering::SeqCst) + 1;
-        Self::start_inner(app, preview, Some(epoch), Arc::new(AtomicBool::new(false)))
+        Self::start_inner(app, preview, Some(epoch))
     }
 
-    pub fn start_headless(app: &AppHandle, cancelled: Arc<AtomicBool>) -> Self {
-        Self::start_inner(app, None, None, cancelled)
+    pub fn start_headless(app: &AppHandle) -> Self {
+        Self::start_inner(app, None, None)
     }
 
-    fn start_inner(
-        app: &AppHandle,
-        preview: Option<PreviewLink>,
-        epoch: Option<u64>,
-        cancelled: Arc<AtomicBool>,
-    ) -> Self {
+    fn start_inner(app: &AppHandle, preview: Option<PreviewLink>, epoch: Option<u64>) -> Self {
+        let cancelled = Arc::new(AtomicBool::new(false));
         let (tx, rx) = mpsc::channel::<ChunkJob>();
         let accumulated = Arc::new(Mutex::new(String::new()));
         let worker = spawn_worker(

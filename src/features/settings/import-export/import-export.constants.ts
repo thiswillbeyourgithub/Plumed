@@ -1,15 +1,12 @@
-import { Settings, Keyboard, MicVocal, Smartphone, AlignLeft, Sparkles, BookText } from 'lucide-react';
+import { Settings, Keyboard, MicVocal, Smartphone, AlignLeft, BookText } from 'lucide-react';
 import { CategoryDefinition } from './import-export.types';
 
 export const CURRENT_MURMURE_FORMAT_VERSION = 1;
 
 export const DICTIONARY_PREVIEW_LIMIT = 15;
 
-export const MAX_LLM_MODES = 4;
-
 export const SUB_ITEM_KEY = {
     rule: (id: string) => `rule_${id}`,
-    mode: (index: number) => `mode_${index}`,
     word: (word: string) => `word_${word}`,
 } as const;
 
@@ -48,16 +45,6 @@ export const CATEGORY_DEFINITIONS: CategoryDefinition[] = [
         icon: AlignLeft,
         supportsMerge: true,
         subItems: [{ key: 'built_in', label: 'Built-in Options' }],
-    },
-    {
-        key: 'llm_connect',
-        label: 'Prompt Mode',
-        icon: Sparkles,
-        supportsMerge: true,
-        subItems: [
-            { key: 'connection', label: 'LLM servers (Command Mode and Prompt Mode)' },
-            { key: 'command', label: 'Command Mode' },
-        ],
     },
     {
         key: 'dictionary',

@@ -7,7 +7,7 @@
 
 # Plumed
 
-Plumed est un fork de [Murmure](https://github.com/Kieirra/murmure), une application de reconnaissance vocale 100 % locale.
+Plumed est un fork de [Murmure](https://www.murmure.app/) (code source sur [GitHub](https://github.com/Kieirra/murmure)), une application de reconnaissance vocale 100 % locale.
 
 Son but est de porter dans une application facile à installer les fonctionnalités du **mode médical de ParakeetWeb**, déjà utilisable aujourd'hui : [http://parakeetweb.olicorne.org/?mode=med](http://parakeetweb.olicorne.org/?mode=med)
 
@@ -19,11 +19,11 @@ Plumed est réalisé par [Olivier Cornelis](https://olicorne.org/fr), psychiatre
 
 ## Confidentialité
 
-Tout fonctionne sur votre ordinateur : l'audio et les transcriptions ne sont jamais envoyés sur internet. Seule exception : si vous connectez vous-même un serveur distant dans Extensions > Mode Prompt.
+Tout fonctionne sur votre ordinateur : l'audio et les transcriptions ne sont jamais envoyés sur internet.
 
 ## Remerciements et licences
 
-- **[Murmure](https://github.com/Kieirra/murmure)** par Al1x-ai : l'application dont Plumed est un fork (AGPL v3). Soutenez le projet original !
+- **[Murmure](https://www.murmure.app/)** par [Al1x-ai](https://www.al1x-ai.com/) : l'application dont Plumed est un fork (AGPL v3, [code source](https://github.com/Kieirra/murmure)). Soutenez le projet original !
 - **[ParakeetWeb](https://github.com/thiswillbeyourgithub/parakeet_web)** : le mode médical porté ici, et la liste d'amplification de phrases médicales (AGPL v3).
 - **[UltiMed](https://huggingface.co/Olicorne/parakeet-tdt-0.6b-v3-ultra-UltiMed-onnx)** : règles de correction des médicaments et termes médicaux (CC BY 4.0), construites à partir des données ouvertes françaises sur le médicament (Licence Ouverte / Etalab 2.0 : OPEN_MEDIC, RETROCEDAM, BDPM).
 - **[InterHop murmure-regex](https://framagit.org/interhop/murmure-regex)** : règles de dictée médicale (unités, constantes, ponctuation dictée, modèles d'examens), proposées par défaut comme règles de formatage (AGPL v3).

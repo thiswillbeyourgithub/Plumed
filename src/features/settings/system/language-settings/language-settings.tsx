@@ -6,7 +6,7 @@ import { useTranslation } from '@/i18n';
 import { useLanguageState } from './hooks/use-language-state';
 
 const SUPPORTED_LANGUAGES = [
-    { code: 'default', label: 'Default' },
+    { code: 'default', label: 'Default (French)' },
     { code: 'en', label: 'English' },
     { code: 'fr', label: 'Français' },
 ];

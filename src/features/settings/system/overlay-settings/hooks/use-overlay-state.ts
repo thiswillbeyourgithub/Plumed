@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { useTranslation } from '@/i18n';
 import { AppSettings } from '@/features/settings/settings.types';
 
-type ResultPanelMode = 'off' | 'command' | 'command_llm' | 'all';
+type ResultPanelMode = 'off' | 'all';
 
 export const useOverlayState = () => {
     const [overlayMode, setOverlayMode] = useState<'hidden' | 'recording' | 'always'>('recording');
@@ -14,7 +14,7 @@ export const useOverlayState = () => {
     const [streamingTextWidth, setStreamingTextWidth] = useState(450);
     const [streamingFontSize, setStreamingFontSize] = useState(11);
     const [streamingMaxLines, setStreamingMaxLines] = useState(5);
-    const [resultPanelMode, setResultPanelMode] = useState<ResultPanelMode>('command');
+    const [resultPanelMode, setResultPanelMode] = useState<ResultPanelMode>('off');
     const [resultPanelDuration, setResultPanelDuration] = useState(5);
     const { t } = useTranslation();
     const showSaveError = () => toast.error(t('Failed to save overlay settings'));
@@ -32,8 +32,7 @@ export const useOverlayState = () => {
             if (typeof settings.streaming_font_size === 'number') setStreamingFontSize(settings.streaming_font_size);
             if (typeof settings.streaming_max_lines === 'number') setStreamingMaxLines(settings.streaming_max_lines);
             const panelMode = settings.result_panel_mode;
-            if (panelMode === 'off' || panelMode === 'command' || panelMode === 'command_llm' || panelMode === 'all')
-                setResultPanelMode(panelMode);
+            if (panelMode === 'off' || panelMode === 'all') setResultPanelMode(panelMode);
             if (typeof settings.result_panel_duration_secs === 'number')
                 setResultPanelDuration(settings.result_panel_duration_secs);
         });

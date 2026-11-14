@@ -221,8 +221,6 @@ Structure the backend code in `src-tauri/src/` into logical feature modules, eac
 - **`/dictionary/`**: Phonetic dictionary and transcription correction
 - **`/engine/`**: Speech-to-text engine (Parakeet model)
 - **`/history/`**: Transcription history management
-- **`/http_api/`**: HTTP API server for external integrations
-- **`/llm/`**: LLM integration (Ollama) for post-processing
 - **`/model/`**: Model download and management
 - **`/onboarding/`**: Onboarding state and UI flow
 - **`/overlay/`**: Recording overlay window and system tray
@@ -259,12 +257,6 @@ src-tauri/src/
 │   ├── helpers.rs
 │   └── transcription_engine.rs
 │
-├── llm/                # LLM integration
-│   ├── mod.rs
-│   ├── llm.rs
-│   ├── types.rs
-│   └── helpers.rs
-│
 └── ...                 # Other feature modules
 ```
 
@@ -276,7 +268,7 @@ Each feature must be organized in its own directory following this strict struct
 
 **Rules:**
 
-1. **1 Feature = 1 Directory**: Each feature has its own dedicated directory (e.g., `audio/`, `llm/`, `stats/`)
+1. **1 Feature = 1 Directory**: Each feature has its own dedicated directory (e.g., `audio/`, `engine/`, `stats/`)
 2. **`mod.rs` as Barrel File Only**: The `mod.rs` file serves only to expose functions, objects, and types. No business logic allowed (similar to JavaScript barrel files)
 3. **Feature Entry Point**: The main entry point must be a `.rs` file with the same name as the directory (e.g., `audio/audio.rs` for the `audio/` directory)
 4. **Utility Functions**: Helper/utility functions must be in a `helpers.rs` file

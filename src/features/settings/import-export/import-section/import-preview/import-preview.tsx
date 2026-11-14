@@ -15,7 +15,6 @@ import {
 } from '../../import-export.helpers';
 import { buildRenderers } from '../../import-export.renderers';
 import { FormattingRule } from '@/features/personalize/formatting-rules/types';
-import { LLMMode } from '@/features/extensions/llm-connect/hooks/use-llm-connect';
 
 interface ImportPreviewProps {
     configData: MurmureExportData;
@@ -36,11 +35,9 @@ export const ImportPreview = ({ configData, fileName, isImporting, onImport, onC
     const [selection, setSelection] = useState(() => buildImportSelection(categories));
     const [strategies, setStrategies] = useState<Partial<Record<CategoryKey, ImportStrategy>>>({
         formatting_rules: 'replace',
-        llm_connect: 'replace',
         dictionary: 'replace',
     });
     const fileRules: FormattingRule[] = categories.formatting_rules?.rules ?? [];
-    const fileModes: LLMMode[] = categories.llm_connect?.modes ?? [];
     const fileWords: string[] = Object.keys(categories.dictionary ?? {});
 
     const disabledCategories = new Set<CategoryKey>(
@@ -53,7 +50,7 @@ export const ImportPreview = ({ configData, fileName, isImporting, onImport, onC
 
     const categoriesWithDynamic = buildCategoriesWithDynamic(
         CATEGORY_DEFINITIONS,
-        buildRenderers(fileRules, fileModes, fileWords)
+        buildRenderers(fileRules, fileWords)
     );
 
     const selectedCategories = CATEGORY_DEFINITIONS.filter(

@@ -8,8 +8,6 @@ mod dictionary;
 mod engine;
 mod formatting_rules;
 mod history;
-mod http_api;
-mod llm;
 mod medical;
 mod model;
 mod onboarding;
@@ -29,8 +27,6 @@ use audio::preload_engine;
 use audio::types::AudioState;
 use commands::*;
 use dictionary::Dictionary;
-use http_api::HttpApiState;
-use llm::is_transform_processing;
 use log::{error, info, warn};
 use model::Model;
 use overlay::tray::setup_tray;
@@ -307,7 +303,6 @@ pub fn run() {
                 return Ok(());
             }
 
-            app.manage(HttpApiState::new());
             app.manage(SmartMicState::new());
             app.manage(utils::enigo_session::EnigoState::default());
 
@@ -359,17 +354,6 @@ pub fn run() {
 
             audio::microphone::init_mic_cache_if_needed(app.handle(), s.mic_id.clone());
 
-            if s.api_enabled {
-                let app_handle = app.handle().clone();
-                let state = app_handle.state::<HttpApiState>().inner().clone();
-                if let Err(e) =
-                    crate::http_api::spawn_http_api_thread(app_handle.clone(), s.api_port, state)
-                {
-                    warn!("HTTP API not started at boot: {}", e);
-                    crate::http_api::notify_start_error_dialog(&app_handle, &e);
-                }
-            }
-
             if s.smartmic_enabled {
                 if crate::utils::platform::is_wayland_session() {
                     info!("Smart Mic disabled on Wayland, skipping server startup.");
@@ -403,7 +387,7 @@ pub fn run() {
             }
 
             // Cold-start CLI dispatch: apply the command after init so
-            // the audio/llm pipelines are ready.
+            // the audio pipeline is ready.
             if let Some(cmd) = pending_cli_action {
                 info!("CLI dispatch (cold start): {:?}", cmd);
                 let app_handle = app.handle().clone();
@@ -449,21 +433,9 @@ pub fn run() {
             import_dictionary,
             get_last_transcript_shortcut,
             set_last_transcript_shortcut,
-            get_command_shortcut,
-            set_command_shortcut,
             get_cancel_shortcut,
             set_cancel_shortcut,
             cancel_recording,
-            get_llm_mode_1_shortcut,
-            set_llm_mode_1_shortcut,
-            get_llm_mode_2_shortcut,
-            set_llm_mode_2_shortcut,
-            get_llm_mode_3_shortcut,
-            set_llm_mode_3_shortcut,
-            get_llm_mode_4_shortcut,
-            set_llm_mode_4_shortcut,
-            get_llm_transform_shortcut,
-            set_llm_transform_shortcut,
             get_voice_mode_toggle_shortcut,
             set_voice_mode_toggle_shortcut,
             set_overlay_mode,
@@ -473,13 +445,6 @@ pub fn run() {
             resume_transcription,
             start_shortcut_capture,
             stop_shortcut_capture,
-            get_api_enabled,
-            set_api_enabled,
-            get_api_port,
-            set_api_port,
-            start_http_api_server,
-            stop_http_api_server,
-            get_http_api_status,
             set_copy_to_clipboard,
             set_auto_insert,
             set_paste_method,
@@ -497,16 +462,6 @@ pub fn run() {
             set_onboarding_transcribed_outside_app,
             set_onboarding_added_dictionary_word,
             set_onboarding_congrats_dismissed,
-            get_llm_connect_settings,
-            set_llm_connect_settings,
-            test_llm_connection,
-            fetch_ollama_models,
-            pull_ollama_model,
-            test_remote_connection,
-            fetch_remote_models,
-            store_remote_api_key,
-            has_remote_api_key,
-            get_remote_api_key_masked,
             set_sound_enabled,
             set_sound_volume,
             set_lower_output_while_recording,
@@ -529,10 +484,6 @@ pub fn run() {
             set_wake_word_enabled,
             get_wake_word_record,
             set_wake_word_record,
-            get_llm_mode_wake_word,
-            set_llm_mode_wake_word,
-            get_wake_word_command,
-            set_wake_word_command,
             get_wake_word_cancel,
             set_wake_word_cancel,
             get_wake_word_validate,
@@ -571,8 +522,6 @@ pub fn run() {
             set_streaming_preview,
             set_overlay_size,
             set_streaming_text_settings,
-            get_recording_mode,
-            get_active_llm_prompt_name,
             consume_pending_mode_flash,
             consume_pending_result,
             ack_result_panel_shown,
@@ -581,8 +530,7 @@ pub fn run() {
             set_result_panel_duration,
             set_overlay_input_region,
             flash_text_in_overlay,
-            hide_overlay_if_idle,
-            is_transform_processing
+            hide_overlay_if_idle
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

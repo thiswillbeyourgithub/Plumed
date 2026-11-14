@@ -7,7 +7,6 @@ Find solutions to the most common issues. These pages are based on real user rep
 1. **[Transcription in the wrong language](transcription.md)** - Murmure transcribes in English when you speak French (or another language)
 2. **[Text doesn't appear in my application](text-insertion.md)** - Transcription works but text is not inserted
 3. **[Shortcuts don't work](shortcuts.md)** - The recording shortcut has no effect
-4. **[Prompt Mode errors](llm-connect.md)** - Ollama 500 errors, slow responses, model issues
 
 ## Quick Fixes
 
@@ -18,7 +17,6 @@ Find solutions to the most common issues. These pages are based on real user rep
 | Shortcut conflict (macOS)    | Change shortcut to Ctrl+Option+M                                                     |
 | Shortcut not working (Linux) | See [Configure shortcuts on Linux](../configure-shortcuts-on-linux.md)               |
 | MSVCP140.dll error (Windows) | Install [Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe) |
-| Ollama 500 error             | Use a smaller model (qwen3.5:4b)                                                     |
 | Settings corrupted           | Delete settings.json and restart                                                     |
 
 ## How to Get Logs

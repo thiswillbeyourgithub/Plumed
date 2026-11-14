@@ -3,8 +3,7 @@ import type { ViewMode } from '../smartmic.types';
 
 const STORAGE_KEY = 'smartmic_view_mode';
 
-const isViewMode = (value: string | null): value is ViewMode =>
-    value === 'remote' || value === 'transcription' || value === 'translation';
+const isViewMode = (value: string | null): value is ViewMode => value === 'remote' || value === 'transcription';
 
 const readInitial = (): ViewMode => {
     const saved = localStorage.getItem(STORAGE_KEY);

@@ -5,9 +5,6 @@ import clsx from 'clsx';
 import { Bounce, ToastContainer } from 'react-toastify';
 import { AccessibilityListener } from './listeners/accessibility-listener';
 import { RecordingErrorListener } from './listeners/recording-error-listener';
-import { LlmErrorListener } from './listeners/llm-error-listener';
-import { LlmModeNotConfiguredListener } from './listeners/llm-mode-not-configured-listener';
-import { ToastEventListener } from './listeners/toast-event-listener';
 import { ConfigImportedListener } from './listeners/config-imported-listener';
 import { WaylandListener } from './listeners/wayland-listener';
 import { VoiceModeToggleListener } from './listeners/voice-mode-toggle-listener';
@@ -19,9 +16,6 @@ export const Layout = () => {
         <SidebarProvider open={true} onOpenChange={() => {}} className="bg-background dark">
             <AccessibilityListener />
             <RecordingErrorListener />
-            <LlmErrorListener />
-            <LlmModeNotConfiguredListener />
-            <ToastEventListener />
             <ConfigImportedListener />
             <WaylandListener />
             <VoiceModeToggleListener />

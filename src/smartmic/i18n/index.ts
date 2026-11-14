@@ -8,7 +8,7 @@ const isLang = (value: string | null): value is Lang => value === 'en' || value 
 
 /**
  * Read the active language once per page load.
- * Priority: URL ?lang= param (persisted), then localStorage, then 'en'.
+ * Priority: URL ?lang= param (persisted), then localStorage, then 'fr' (Plumed is French-first).
  */
 const getLang = (): Lang => {
     try {
@@ -29,7 +29,7 @@ const getLang = (): Lang => {
     } catch {
         // localStorage unavailable (private mode): fall through
     }
-    return 'en';
+    return 'fr';
 };
 
 const format = (template: string, params?: Record<string, string | number>): string => {
@@ -44,7 +44,6 @@ const format = (template: string, params?: Record<string, string | number>): str
 // so the dict and `t` are module-level constants.
 export const lang: Lang = getLang();
 const DICT = STRINGS[lang];
-export const t = (key: StringKey, params?: Record<string, string | number>): string =>
-    format(DICT[key], params);
+export const t = (key: StringKey, params?: Record<string, string | number>): string => format(DICT[key], params);
 
 export type TranslateFn = typeof t;

@@ -16,8 +16,6 @@ interface UseRecordingControlParams {
 export interface RecordingControl {
     toggle: () => Promise<void>;
     cancel: () => void;
-    changeMode: (direction: 'prev' | 'next') => void;
-    translationToggle: (langA: string, langB: string) => Promise<void>;
 }
 
 export const useRecordingControl = ({
@@ -60,7 +58,7 @@ export const useRecordingControl = ({
     }, [sendJson, cleanupAudio, dispatch]);
 
     const startMic = useCallback(
-        async (onStart: () => void, recStartPayload: ClientMessage): Promise<void> => {
+        async (recStartPayload: ClientMessage): Promise<void> => {
             try {
                 await initAudio();
             } catch (err: unknown) {
@@ -74,7 +72,7 @@ export const useRecordingControl = ({
                 return;
             }
             navigator.vibrate?.(50);
-            onStart();
+            dispatch({ type: 'rec_started' });
             sendJson(recStartPayload);
         },
         [initAudio, sendJson, dispatch]
@@ -86,37 +84,13 @@ export const useRecordingControl = ({
             return;
         }
         if (!connected) return;
-        const shouldPaste = viewMode === 'remote';
-        await startMic(
-            () => dispatch({ type: 'rec_started' }),
-            { type: 'rec_start', mode: state.modes[state.modeIndex].id, paste: shouldPaste }
-        );
-    }, [connected, startMic, stopMic, viewMode, state.modes, state.modeIndex, dispatch]);
+        await startMic({ type: 'rec_start', paste: viewMode === 'remote' });
+    }, [connected, startMic, stopMic, viewMode]);
 
     const cancel = useCallback(() => {
         if (!isRecordingRef.current) return;
         cancelMic();
     }, [cancelMic]);
-
-    const changeMode = (direction: 'prev' | 'next') => {
-        if (isRecordingRef.current) return;
-        dispatch({ type: 'change_mode', direction });
-    };
-
-    const translationToggle = useCallback(
-        async (langA: string, langB: string) => {
-            if (isRecordingRef.current) {
-                stopMic();
-                return;
-            }
-            if (!connected) return;
-            await startMic(
-                () => dispatch({ type: 'translation_rec_started', pair: { a: langA, b: langB } }),
-                { type: 'rec_start', mode: 'translation', paste: false, lang_a: langA, lang_b: langB }
-            );
-        },
-        [connected, startMic, stopMic, dispatch]
-    );
 
     useEffect(() => {
         if (!connected && isRecordingRef.current) {
@@ -125,5 +99,5 @@ export const useRecordingControl = ({
         }
     }, [connected, cleanupAudio, dispatch]);
 
-    return { toggle, cancel, changeMode, translationToggle };
+    return { toggle, cancel };
 };

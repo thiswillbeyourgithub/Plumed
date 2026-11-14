@@ -9,19 +9,10 @@ Ces commandes communiquent avec l'instance Murmure en cours d'exécution. Si Mur
 | Commande | Description |
 | -------- | ----------- |
 | `murmure --transcription` | Toggle la transcription standard ON/OFF |
-| `murmure --transcription-command` | Toggle la transcription en mode Command |
 | `murmure --paste-last` | Colle la dernière transcription, même quand Insertion automatique est désactivé |
 | `murmure --cancel` | Annule l'enregistrement en cours et revient en idle |
 | `murmure --voice-mode` | Toggle le Voice Mode ON/OFF |
 | `murmure --quit` | Quitte complètement Murmure |
-| `murmure --llm-mode 1` | Lance une transcription avec le prompt LLM 1 |
-| `murmure --llm-mode 2` | Lance une transcription avec le prompt LLM 2 |
-| `murmure --llm-mode 3` | Lance une transcription avec le prompt LLM 3 |
-| `murmure --llm-mode 4` | Lance une transcription avec le prompt LLM 4 |
-| `murmure --llm-transform 1` | Applique le prompt LLM 1 au texte sélectionné |
-| `murmure --llm-transform 2` | Applique le prompt LLM 2 au texte sélectionné |
-| `murmure --llm-transform 3` | Applique le prompt LLM 3 au texte sélectionné |
-| `murmure --llm-transform 4` | Applique le prompt LLM 4 au texte sélectionné |
 
 Ces commandes sont principalement utilisées sous Linux Wayland pour configurer des raccourcis personnalisés au niveau OS. Voir [Configurer les raccourcis sous Linux](../configure-shortcuts-on-linux.fr.md) pour les instructions par environnement de bureau.
 
@@ -93,7 +84,6 @@ Le fichier `.murmure` est un JSON avec la structure suivante :
   "settings": { ... },
   "shortcuts": { ... },
   "formatting_rules": { ... },
-  "llm_connect": { ... },
   "dictionary": { ... }
 }
 ```

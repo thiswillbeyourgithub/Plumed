@@ -1,8 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
-import { MAX_LLM_MODES } from '../import-export.constants';
 import { CategoryKey, ExportedCategories, ImportStrategy } from '../import-export.types';
 import { FormattingRule, FormattingSettings } from '@/features/personalize/formatting-rules/types';
-import { LLMConnectSettings } from '@/features/extensions/llm-connect/hooks/use-llm-connect';
 
 const applySettings = async (categories: ExportedCategories): Promise<void> => {
     const settings = categories.settings;
@@ -12,8 +10,6 @@ const applySettings = async (categories: ExportedCategories): Promise<void> => {
     await invoke('set_record_mode', { mode: settings.record_mode });
     await invoke('set_overlay_mode', { mode: settings.overlay_mode });
     await invoke('set_overlay_position', { position: settings.overlay_position });
-    await invoke('set_api_enabled', { enabled: settings.api_enabled });
-    await invoke('set_api_port', { port: settings.api_port });
     await invoke('set_copy_to_clipboard', { enabled: settings.copy_to_clipboard });
     await invoke('set_paste_method', { method: settings.paste_method });
     if (settings.auto_insert != null) {
@@ -65,7 +61,6 @@ const applyVoiceMode = async (categories: ExportedCategories): Promise<void> => 
     }
     await invoke('set_wake_word_enabled', { enabled: voiceMode.wake_word_enabled });
     await invoke('set_wake_word_record', { word: voiceMode.wake_word_record });
-    await invoke('set_wake_word_command', { word: voiceMode.wake_word_command });
     await invoke('set_wake_word_cancel', { word: voiceMode.wake_word_cancel });
     await invoke('set_wake_word_validate', { word: voiceMode.wake_word_validate });
     await invoke('set_wake_word_submit', { word: voiceMode.wake_word_submit });
@@ -98,31 +93,6 @@ const applyShortcuts = async (categories: ExportedCategories): Promise<void> => 
     await invoke('set_last_transcript_shortcut', {
         binding: shortcuts.last_transcript_shortcut,
     });
-    await invoke('set_command_shortcut', { binding: shortcuts.command_shortcut });
-    await invoke('set_llm_mode_1_shortcut', {
-        binding: shortcuts.llm_mode_1_shortcut,
-    });
-    await invoke('set_llm_mode_2_shortcut', {
-        binding: shortcuts.llm_mode_2_shortcut,
-    });
-    await invoke('set_llm_mode_3_shortcut', {
-        binding: shortcuts.llm_mode_3_shortcut,
-    });
-    await invoke('set_llm_mode_4_shortcut', {
-        binding: shortcuts.llm_mode_4_shortcut,
-    });
-    if (shortcuts.llm_transform_1_shortcut != null) {
-        await invoke('set_llm_transform_shortcut', { index: 0, binding: shortcuts.llm_transform_1_shortcut });
-    }
-    if (shortcuts.llm_transform_2_shortcut != null) {
-        await invoke('set_llm_transform_shortcut', { index: 1, binding: shortcuts.llm_transform_2_shortcut });
-    }
-    if (shortcuts.llm_transform_3_shortcut != null) {
-        await invoke('set_llm_transform_shortcut', { index: 2, binding: shortcuts.llm_transform_3_shortcut });
-    }
-    if (shortcuts.llm_transform_4_shortcut != null) {
-        await invoke('set_llm_transform_shortcut', { index: 3, binding: shortcuts.llm_transform_4_shortcut });
-    }
     await invoke('set_cancel_shortcut', { binding: shortcuts.cancel_shortcut });
 };
 
@@ -155,64 +125,6 @@ const applyFormattingRules = async (categories: ExportedCategories, strategy: Im
     await invoke('set_formatting_settings', {
         settings: { built_in: imported.built_in ?? current.built_in, rules },
     });
-};
-
-const applyLlmConnect = async (categories: ExportedCategories, strategy: ImportStrategy): Promise<number> => {
-    const imported = categories.llm_connect;
-    if (imported == null) {
-        return 0;
-    }
-
-    const current = await invoke<LLMConnectSettings>('get_llm_connect_settings');
-
-    let modes: typeof current.modes;
-    let activeIndex: number;
-    let skipped = 0;
-
-    if (strategy === 'merge') {
-        const existingNames = new Set(current.modes.map((m) => m.name.toLowerCase()));
-        modes = [...current.modes];
-        for (const mode of imported.modes) {
-            if (existingNames.has(mode.name.toLowerCase())) {
-                continue;
-            }
-            if (modes.length >= MAX_LLM_MODES) {
-                skipped++;
-                continue;
-            }
-            modes.push(mode);
-        }
-        activeIndex = current.active_mode_index;
-    } else {
-        modes = imported.modes;
-        activeIndex = imported.active_mode_index;
-    }
-
-    const settings: LLMConnectSettings = {
-        url: imported.url ?? current.url,
-        remote_url: imported.remote_url ?? current.remote_url,
-        remote_privacy_acknowledged: imported.remote_privacy_acknowledged ?? current.remote_privacy_acknowledged,
-        onboarding_completed:
-            imported.modes.length > 0 ? true : (imported.onboarding_completed ?? current.onboarding_completed),
-        enabled:
-            imported.modes.length > 0
-                ? (imported.enabled ?? imported.onboarding_completed ?? current.enabled)
-                : current.enabled,
-        modes,
-        active_mode_index: activeIndex,
-        model: '',
-        prompt: '',
-        command:
-            imported.command == null
-                ? current.command
-                : {
-                      ...imported.command,
-                      enabled: imported.command.enabled ?? imported.onboarding_completed ?? current.command.enabled,
-                  },
-    };
-
-    await invoke('set_llm_connect_settings', { settings });
-    return skipped;
 };
 
 // Old backups stored the dictionary as { word: languages }; keep only the words for backward compatibility.
@@ -261,29 +173,25 @@ export const applySingleCategory = async (
     categoryKey: CategoryKey,
     categories: ExportedCategories,
     strategies: Partial<Record<CategoryKey, ImportStrategy>>
-): Promise<number> => {
+): Promise<void> => {
     switch (categoryKey) {
         case 'settings':
             await applySettings(categories);
-            return 0;
+            break;
         case 'shortcuts':
             await applyShortcuts(categories);
-            return 0;
+            break;
         case 'voice_mode':
             await applyVoiceMode(categories);
-            return 0;
+            break;
         case 'smartmic':
             await applySmartMic(categories);
-            return 0;
+            break;
         case 'formatting_rules':
             await applyFormattingRules(categories, strategies.formatting_rules ?? 'replace');
-            return 0;
-        case 'llm_connect':
-            return applyLlmConnect(categories, strategies.llm_connect ?? 'replace');
+            break;
         case 'dictionary':
             await applyDictionary(categories, strategies.dictionary ?? 'replace');
-            return 0;
-        default:
-            return 0;
+            break;
     }
 };

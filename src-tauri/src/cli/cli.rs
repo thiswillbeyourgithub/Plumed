@@ -1,14 +1,12 @@
-use super::helpers::{parse_file_arg, parse_llm_mode, parse_strategy};
+use super::helpers::{parse_file_arg, parse_strategy};
 use super::types::{CliCommand, ImportStrategy};
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// Single-action flags: first match wins. Order is significant and must match
-/// the original sequential checks. `LlmMode` is handled separately because it
-/// carries a value.
+/// the original sequential checks.
 const ACTION_FLAGS: &[(&str, CliCommand)] = &[
     ("transcription", CliCommand::Transcription),
-    ("transcription-command", CliCommand::TranscriptionCommand),
     ("paste-last", CliCommand::PasteLast),
     ("cancel", CliCommand::Cancel),
     ("voice-mode", CliCommand::VoiceMode),
@@ -47,13 +45,10 @@ USAGE:
 
 OPTIONS:
     --transcription              Toggle standard transcription on/off
-    --transcription-command      Toggle transcription in command mode
     --paste-last                 Paste the last transcription
     --cancel                     Cancel the current recording
     --voice-mode                 Toggle Voice Mode on/off
     --quit                       Quit the running instance of Murmure
-    --llm-mode <N>               Toggle transcription with prompt N (1-4)
-    --llm-transform <N>          Apply prompt N to the selected text (1-4)
     --hidden                     Start without showing the main window
     -h, --help                   Print help information
     -V, --version                Print version information
@@ -87,7 +82,6 @@ TRANSCRIBE:
 EXAMPLES:
     plumed --transcription
     plumed --paste-last
-    plumed --llm-mode 2
     plumed --transcription --hidden
     plumed import config.murmure
     plumed import config.murmure --strategy merge
@@ -173,23 +167,6 @@ pub fn parse_raw_args(args: &[String]) -> Result<Option<CliCommand>, String> {
             return Ok(Some(command.clone()));
         }
     }
-    if let Some(idx) = args.iter().position(|a| a == "--llm-mode") {
-        let value = match args.get(idx + 1) {
-            Some(v) => v,
-            None => return Ok(None),
-        };
-        let n = parse_llm_mode(value)?;
-        return Ok(Some(CliCommand::LlmMode(n)));
-    }
-    if let Some(idx) = args.iter().position(|a| a == "--llm-transform") {
-        let value = match args.get(idx + 1) {
-            Some(v) => v,
-            None => return Ok(None),
-        };
-        let n = parse_llm_mode(value)?;
-        return Ok(Some(CliCommand::LlmTransform(n)));
-    }
-
     Ok(None)
 }
 
@@ -401,7 +378,6 @@ mod tests {
     fn test_parse_raw_args_action_flags() {
         let cases: &[(&str, CliCommand)] = &[
             ("--transcription", CliCommand::Transcription),
-            ("--transcription-command", CliCommand::TranscriptionCommand),
             ("--paste-last", CliCommand::PasteLast),
             ("--cancel", CliCommand::Cancel),
             ("--voice-mode", CliCommand::VoiceMode),
@@ -415,92 +391,6 @@ mod tests {
                 Some(expected.clone()),
                 "flag={flag}"
             );
-        }
-    }
-
-    #[test]
-    fn test_parse_raw_args_llm_mode_valid() {
-        // Smoke test: parse_raw_args wires --llm-mode <N> to CliCommand::LlmMode.
-        // Full range coverage lives in cli::helpers::tests::test_parse_llm_mode_valid.
-        let args = vec![
-            "murmure".to_string(),
-            "--llm-mode".to_string(),
-            "2".to_string(),
-        ];
-        assert_eq!(parse_raw_args(&args).unwrap(), Some(CliCommand::LlmMode(2)));
-    }
-
-    #[test]
-    fn test_parse_raw_args_llm_mode_out_of_range() {
-        for value in ["0", "5", "100"] {
-            let args = vec![
-                "murmure".to_string(),
-                "--llm-mode".to_string(),
-                value.to_string(),
-            ];
-            assert!(parse_raw_args(&args).is_err(), "value={value}");
-        }
-    }
-
-    #[test]
-    fn test_parse_raw_args_llm_mode_out_of_range_message() {
-        // Locks the Err message for --llm-mode hors plage: shell consumers
-        // (cold path) rely on this to print before exit(1).
-        let args = vec![
-            "murmure".to_string(),
-            "--llm-mode".to_string(),
-            "99".to_string(),
-        ];
-        let err = parse_raw_args(&args).unwrap_err();
-        assert!(
-            err.contains("99"),
-            "message should mention bad value: {err}"
-        );
-        assert!(
-            err.contains("1") && err.contains("4"),
-            "message should mention valid range: {err}"
-        );
-    }
-
-    #[test]
-    fn test_parse_raw_args_llm_mode_missing_value() {
-        let args = vec!["murmure".to_string(), "--llm-mode".to_string()];
-        assert_eq!(parse_raw_args(&args).unwrap(), None);
-    }
-
-    #[test]
-    fn test_parse_raw_args_llm_transform_valid() {
-        let args = vec![
-            "murmure".to_string(),
-            "--llm-transform".to_string(),
-            "3".to_string(),
-        ];
-        assert!(matches!(
-            parse_raw_args(&args).unwrap(),
-            Some(CliCommand::LlmTransform(3))
-        ));
-    }
-
-    #[test]
-    fn test_llm_transform_does_not_match_llm_mode() {
-        let args = vec![
-            "murmure".to_string(),
-            "--llm-transform".to_string(),
-            "1".to_string(),
-        ];
-        let result = parse_raw_args(&args).unwrap();
-        assert!(!matches!(result, Some(CliCommand::LlmMode(_))));
-    }
-
-    #[test]
-    fn test_parse_raw_args_llm_transform_out_of_range() {
-        for value in ["0", "5", "abc"] {
-            let args = vec![
-                "murmure".to_string(),
-                "--llm-transform".to_string(),
-                value.to_string(),
-            ];
-            assert!(parse_raw_args(&args).is_err(), "value={value}");
         }
     }
 

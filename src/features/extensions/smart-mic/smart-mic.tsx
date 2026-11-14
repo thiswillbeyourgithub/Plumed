@@ -95,7 +95,7 @@ export const SmartMic = () => {
                 title={t('Smart Mic')}
                 colorScheme="standard"
                 titleTestId="smart-mic-title"
-                subtitle={t('Dictate, translate and control your PC from your phone.')}
+                subtitle={t('Dictate and control your PC from your phone.')}
                 badge={t('Beta')}
             />
 

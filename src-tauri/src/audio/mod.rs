@@ -13,4 +13,3 @@ pub mod vad;
 
 pub use audio::*;
 pub use chunking::*;
-pub use pipeline::*;

@@ -41,7 +41,7 @@ fn show_smartmic_error(app: &AppHandle, msg: &str) {
         .blocking_show();
 }
 
-/// Spawn the SmartMic HTTPS server on a dedicated thread (same pattern as http_api).
+/// Spawn the SmartMic HTTPS server on a dedicated thread.
 /// When `startup_delay` is `Some`, the thread sleeps first then calls `prepare_smartmic_state`
 /// internally (used at app startup). When `None`, the caller is responsible for preparing
 /// state beforehand (used by the toggle command, which returns prepare errors synchronously).

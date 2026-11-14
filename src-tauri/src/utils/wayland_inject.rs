@@ -181,10 +181,6 @@ pub fn paste(shift: bool) -> Result<(), String> {
     with_device("paste", |h| press_chord(h, keys))
 }
 
-pub fn copy() -> Result<(), String> {
-    with_device("copy", |h| press_chord(h, &[Key::LeftCtrl, Key::C]))
-}
-
 pub fn enter() -> Result<(), String> {
     with_device("enter", |h| press_chord(h, &[Key::Enter]))
 }

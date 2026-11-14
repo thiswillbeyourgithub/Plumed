@@ -4,6 +4,7 @@ import { getCurrentWebview } from '@tauri-apps/api/webview';
 import clsx from 'clsx';
 import { Page } from '@/components/page';
 import { useTranslation } from '@/i18n';
+import { PLUMED_LATEST_RELEASE_URL } from '@/utils/plumed-links';
 import { ImportState } from '../../import-export.types';
 
 interface ImportDropZoneProps {
@@ -48,11 +49,7 @@ export const ImportDropZone = ({ state, errorMessage, onBrowse, onFileDrop, onTr
                 <p className="text-sm text-muted-foreground">{errorMessage}</p>
                 <div className="flex gap-2">
                     <Page.SecondaryButton onClick={onTryAnother}>{t('Try another file')}</Page.SecondaryButton>
-                    <a
-                        href="https://github.com/Kieirra/murmure/releases/latest"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
+                    <a href={PLUMED_LATEST_RELEASE_URL} target="_blank" rel="noopener noreferrer">
                         <Page.PrimaryButton>{t('Update Murmure')}</Page.PrimaryButton>
                     </a>
                 </div>

@@ -11,10 +11,7 @@ pub enum KeyEventType {
 #[derive(Debug, Clone, PartialEq)]
 pub enum ShortcutAction {
     StartRecording,
-    StartRecordingCommand,
     PasteLastTranscript,
-    StartRecordingLlmMode(usize),
-    TransformSelectionLlmMode(usize),
     CancelRecording,
     ToggleVoiceMode,
 }
@@ -53,8 +50,6 @@ pub struct ShortcutState {
 pub enum RecordingSource {
     None,
     Standard,
-    Llm,
-    Command,
 }
 
 pub struct RecordingState {

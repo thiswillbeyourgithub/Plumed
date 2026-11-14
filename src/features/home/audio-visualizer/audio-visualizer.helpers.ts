@@ -16,8 +16,6 @@ type Rgb = [number, number, number];
 
 const GRADIENT_PALETTES: Record<ColorScheme, { center: Rgb; mid: Rgb; edge: Rgb }> = {
     standard: { center: [180, 139, 255], mid: [139, 92, 246], edge: [106, 53, 208] },
-    llm: { center: [221, 60, 221], mid: [128, 77, 230], edge: [171, 48, 232] },
-    command: { center: [249, 200, 6], mid: [249, 148, 6], edge: [233, 86, 12] },
 };
 
 export interface VisualizerState {

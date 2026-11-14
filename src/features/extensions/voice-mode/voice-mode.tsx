@@ -1,10 +1,8 @@
 import { Typography } from '@/components/typography';
 import { SettingsUI } from '@/components/settings-ui';
 import { Slider } from '@/components/slider';
-import { AudioLines, Mic, Timer, Zap } from 'lucide-react';
+import { AudioLines, Mic, Timer } from 'lucide-react';
 import { useTranslation } from '@/i18n';
-import { PALETTES } from '@/components/lib/color-scheme';
-import { useLlmExtensionsEnabled } from '@/features/extensions/llm-connect/hooks/use-llm-extensions-enabled';
 import { ExtensionPageLayout } from '@/features/extensions/extension-page-layout/extension-page-layout';
 import { ExtensionHeader } from '@/features/extensions/extension-header/extension-header';
 import { useWakeWordEnabled } from './hooks/use-wake-word-enabled';
@@ -12,12 +10,10 @@ import { useSilenceTimeout } from './hooks/use-silence-timeout';
 import { useWakeWord, WAKE_WORD_CONFIGS } from './hooks/use-wake-word';
 import { VoiceTriggerItem } from './voice-trigger-item/voice-trigger-item';
 import { VoiceModeCta } from './voice-mode-cta/voice-mode-cta';
-import { LlmConnectTriggers } from './llm-connect-triggers/llm-connect-triggers';
 
 export const VoiceMode = () => {
     const { t, i18n } = useTranslation();
     const submitDefaultWord = i18n.language?.startsWith('fr') ? 'merci alix' : 'thank you alix';
-    const { commandModeEnabled } = useLlmExtensionsEnabled();
     const { enabled, setEnabled } = useWakeWordEnabled();
     const { silenceTimeoutMs, setSilenceTimeoutMs } = useSilenceTimeout();
 
@@ -32,15 +28,6 @@ export const VoiceMode = () => {
         defaultWord: recordDefault,
         resetToDefault: resetRecord,
     } = useWakeWord(WAKE_WORD_CONFIGS.record);
-    const {
-        wakeWord: commandWakeWord,
-        setWakeWord: setCommandWakeWord,
-        handleBlur: handleCommandBlur,
-        isEnabled: commandEnabled,
-        toggleEnabled: toggleCommand,
-        defaultWord: commandDefault,
-        resetToDefault: resetCommand,
-    } = useWakeWord(WAKE_WORD_CONFIGS.command);
     const {
         wakeWord: cancelWakeWord,
         setWakeWord: setCancelWakeWord,
@@ -118,26 +105,6 @@ export const VoiceMode = () => {
                     defaultWord={recordDefault}
                     onReset={resetRecord}
                 />
-                {commandModeEnabled && (
-                    <>
-                        <SettingsUI.Separator />
-                        <VoiceTriggerItem
-                            title={t('Command')}
-                            description={t('Run a voice command')}
-                            wakeWord={commandWakeWord}
-                            onWakeWordChange={setCommandWakeWord}
-                            onBlur={handleCommandBlur}
-                            placeholder="alix command"
-                            dataTestId="wake-word-command-input"
-                            isEnabled={commandEnabled}
-                            onToggleEnabled={toggleCommand}
-                            defaultWord={commandDefault}
-                            onReset={resetCommand}
-                            icon={Zap}
-                            iconColor={PALETTES.command.accent}
-                        />
-                    </>
-                )}
                 <SettingsUI.Separator />
                 <VoiceTriggerItem
                     title={t('Cancel')}
@@ -181,8 +148,6 @@ export const VoiceMode = () => {
                     onReset={resetSubmit}
                 />
             </SettingsUI.Section>
-
-            <LlmConnectTriggers />
 
             <SettingsUI.Section title={t('Listening behavior')} icon={Timer} titleTestId="behavior-title">
                 <SettingsUI.Item>

@@ -25,7 +25,7 @@ export const CliCommandsPanel = () => {
                     </Typography.Paragraph>
                     <Typography.Paragraph className="text-foreground text-xs">
                         <Trans
-                            i18nKey="Once <cmd>murmure --transcription</cmd> works, every other command below binds the same way."
+                            i18nKey="Once <cmd>plumed --transcription</cmd> works, every other command below binds the same way."
                             components={{
                                 cmd: <code className="font-mono text-[11px] px-1 py-0.5 bg-surface-header rounded" />,
                             }}

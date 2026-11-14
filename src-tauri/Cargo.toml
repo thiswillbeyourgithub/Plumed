@@ -29,10 +29,6 @@ hound = "3.5.1"
 cpal = "0.17.3"
 rodio = "0.22"
 once_cell = "1"
-reqwest = { version = "0.13", features = ["json", "stream"] }
-futures-util = "0.3"
-flate2 = "1.1"
-tar = "0.4"
 anyhow = "1.0"
 ort = { version = "=2.0.0-rc.11", features = ["download-binaries"] }
 ndarray = "0.17.2"
@@ -42,10 +38,9 @@ rayon = "1.12"
 tokenizers = { version = "0.23.1", default-features = false, features = ["fancy-regex"] }
 log = "0.4.29"
 enigo = "0.6"
-tokio = { version = "1", features = ["macros", "rt-multi-thread", "time", "sync", "net"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "time", "sync"] }
 text2num = "2.6.2"
-axum = { version = "0.8", features = ["multipart", "ws"] }
-hyper = "1"
+axum = { version = "0.8", features = ["ws"] }
 uuid = { version = "1", features = ["v4"] }
 tauri-plugin-dialog = "~2.6"
 chrono = { version = "0.4", features = ["clock"] }
@@ -53,8 +48,6 @@ tauri-plugin-store = "2"
 tauri-plugin-log = "2"
 unicode-normalization = "0.1"
 strsim = "0.11"
-keyring = { version = "3", features = ["apple-native", "windows-native", "sync-secret-service"] }
-url = "2"
 qrcode = "0.14"
 rcgen = "0.13"
 time = "0.3"

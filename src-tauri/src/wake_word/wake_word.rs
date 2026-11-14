@@ -1,5 +1,5 @@
 use crate::audio::helpers::resample;
-use crate::audio::types::{AudioState, RecordingMode, RecordingTrigger};
+use crate::audio::types::{AudioState, RecordingTrigger};
 use crate::audio::vad::{AdaptiveVad, VoiceActivity};
 use crate::engine::transcription_engine::TranscriptionEngine;
 use crate::shortcuts::types::{recording_state, RecordingSource};
@@ -109,22 +109,7 @@ pub fn start_listener(app: &AppHandle) {
     if !settings.wake_word_record.trim().is_empty() {
         entries.push(WakeWordEntry {
             word: normalize_text(&settings.wake_word_record),
-            action: WakeWordAction::Record(RecordingMode::Standard),
-        });
-    }
-    let llm_settings = crate::llm::helpers::load_llm_connect_settings(app);
-    for (index, mode) in llm_settings.modes.iter().enumerate() {
-        if !mode.wake_word.trim().is_empty() {
-            entries.push(WakeWordEntry {
-                word: normalize_text(&mode.wake_word),
-                action: WakeWordAction::RecordLlmMode(index),
-            });
-        }
-    }
-    if !settings.wake_word_command.trim().is_empty() {
-        entries.push(WakeWordEntry {
-            word: normalize_text(&settings.wake_word_command),
-            action: WakeWordAction::Record(RecordingMode::Command),
+            action: WakeWordAction::Record,
         });
     }
     if !settings.wake_word_cancel.trim().is_empty() {
@@ -236,35 +221,10 @@ fn try_handle_wake_word(
     for entry in entries {
         if matches_wake_word(normalized, &entry.word) {
             match entry.action {
-                WakeWordAction::Record(mode) if !is_recording => {
-                    info!(
-                        "Wake word detected ({}): \"{}\" -> mode {:?}",
-                        source, text, mode
-                    );
-                    if mode == RecordingMode::Command
-                        && crate::shortcuts::shortcuts::ensure_command_ready(app, true).is_err()
-                    {
-                        return true;
-                    }
+                WakeWordAction::Record if !is_recording => {
+                    info!("Wake word detected ({}): \"{}\"", source, text);
                     let _ = app.emit("wake-word-detected", ());
-                    trigger_recording(app, mode);
-                    return true;
-                }
-                WakeWordAction::RecordLlmMode(index) if !is_recording => {
-                    info!(
-                        "Wake word detected ({}): \"{}\" -> LLM mode {}",
-                        source, text, index
-                    );
-                    if crate::shortcuts::shortcuts::ensure_llm_mode_ready(app, index, true).is_err()
-                    {
-                        return true;
-                    }
-                    let _ = app.emit("wake-word-detected", ());
-                    // Silent: back-to-back show_recording_overlay (flash then
-                    // record) races webview creation and leaves the final
-                    // window invisible on Linux.
-                    crate::llm::switch_active_mode_silent(app, index);
-                    trigger_recording(app, RecordingMode::Llm);
+                    trigger_recording(app);
                     return true;
                 }
                 WakeWordAction::Cancel if is_recording => {
@@ -767,22 +727,17 @@ fn transcribe_segment(app: &AppHandle, samples: Vec<f32>) -> anyhow::Result<Stri
     Ok(result.text)
 }
 
-fn trigger_recording(app: &AppHandle, mode: RecordingMode) {
+fn trigger_recording(app: &AppHandle) {
     let audio_state = app.state::<AudioState>();
     audio_state.set_recording_trigger(RecordingTrigger::WakeWord);
 
     crate::onboarding::onboarding::capture_focus_at_record_start(app);
-    crate::audio::record_audio(app, mode);
+    crate::audio::record_audio(app);
 
-    let source = match mode {
-        RecordingMode::Standard => RecordingSource::Standard,
-        RecordingMode::Llm => RecordingSource::Llm,
-        RecordingMode::Command => RecordingSource::Command,
-    };
     let mut src = recording_state().source.lock();
-    *src = source;
+    *src = RecordingSource::Standard;
 
-    info!("Recording triggered by wake word (mode: {:?})", mode);
+    info!("Recording triggered by wake word");
 }
 
 fn trigger_validate(app: &AppHandle) {
@@ -1181,7 +1136,7 @@ mod tests {
         assert_eq!(normalize_text("Alice"), "alix");
         assert_eq!(normalize_text("Ok Alice"), "ok alix");
         assert_eq!(normalize_text("Okay Alice"), "ok alix");
-        assert_eq!(normalize_text("alice command"), "alix command");
+        assert_eq!(normalize_text("alice cancel"), "alix cancel");
         assert_eq!(normalize_text("merci Alix"), "merci alix");
         assert_eq!(normalize_text("merci Alice"), "merci alix");
     }
@@ -1196,9 +1151,6 @@ mod tests {
     fn test_matches_alice_wake_word() {
         let normalized = normalize_text("Ok Alice");
         assert!(matches_wake_word(&normalized, "ok alix"));
-
-        let normalized = normalize_text("Alice command");
-        assert!(matches_wake_word(&normalized, "alix command"));
 
         let normalized = normalize_text("Alice cancel");
         assert!(matches_wake_word(&normalized, "alix cancel"));

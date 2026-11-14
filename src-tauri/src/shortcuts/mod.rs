@@ -19,7 +19,6 @@ mod platform_macos;
 pub mod accessibility_macos;
 
 pub use helpers::{keys_to_string, parse_binding_keys};
-pub use modifiers::wait_for_modifiers_released;
 pub use registry::ShortcutRegistryState;
 pub use shortcuts::{force_stop_recording, handle_shortcut_event, init_shortcuts};
 pub use types::{ActivationMode, ShortcutAction, ShortcutState};

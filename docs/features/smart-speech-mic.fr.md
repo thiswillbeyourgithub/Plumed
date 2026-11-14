@@ -23,7 +23,7 @@ Smart Speech Mic transforme n'importe quel smartphone en microphone sans fil pou
 
 ## Vues du telephone
 
-L'interface web du telephone propose trois onglets en haut de l'ecran, chacun offrant une facon differente d'utiliser Smart Speech Mic. La vue active est memorisee entre les sessions, le telephone reouvre donc l'application sur le dernier onglet utilise.
+L'interface web du telephone propose deux onglets en haut de l'ecran, chacun offrant une facon differente d'utiliser Smart Speech Mic. La vue active est memorisee entre les sessions, le telephone reouvre donc l'application sur le dernier onglet utilise.
 
 ### Remote
 
@@ -44,14 +44,6 @@ Un historique chronologique des transcriptions affiche sur le telephone. Utile q
 - Le bouton **Tout copier** copie l'historique complet en une fois
 - Le menu a trois points permet d'effacer l'historique
 
-### Translation
-
-Traduction bidirectionnelle entre deux langues, affichee sous forme de bulles de chat. Choisissez la paire de langues en haut de la vue, appuyez sur **REC**, et parlez. Chaque prise de parole est detectee, traduite, et affichee du bon cote.
-
-- La paire de langues selectionnee est memorisee entre les sessions
-- Les messages de chaque langue apparaissent de cotes opposes dans la conversation
-- Une bulle clignotante indique une traduction en cours
-
 L'interface web du telephone est disponible en plusieurs langues et suit la langue du navigateur du telephone (vous pouvez aussi en forcer une via le parametre d'URL `?lang=`).
 
 ## Pre-requis
@@ -64,7 +56,7 @@ L'interface web du telephone est disponible en plusieurs langues et suit la lang
 
 - Communication chiffree via TLS (HTTPS + WSS)
 - Certificats auto-signes generes localement
-- Appairage par tokens stockes dans le trousseau natif du systeme
+- Appairage par tokens stockes localement sur votre ordinateur
 - Aucune donnee ne quitte votre reseau local
 
 ## Gestion des appareils appaires

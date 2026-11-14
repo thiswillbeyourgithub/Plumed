@@ -12,7 +12,7 @@ Non. Zero telemetrie, zero analyse, zero tracking. Voir la [Politique de confide
 
 ### Murmure a-t-il besoin d'un GPU ?
 
-Non. Murmure tourne sur CPU. Un GPU n'est pas requis pour la transcription. En revanche, si vous utilisez [Mode Prompt](features/llm-connect.md), un GPU ameliore significativement la vitesse d'inference.
+Non. Murmure tourne sur CPU. Un GPU n'est pas requis pour la transcription.
 
 ### Quelles langues Murmure supporte-t-il ?
 
@@ -43,10 +43,6 @@ C'est presque toujours un probleme de qualite du microphone. Voir [Depannage tra
 ### Murmure peut-il transcrire des reunions ?
 
 La transcription de reunions avec identification des locuteurs n'est pas supportee actuellement. Murmure est concu pour la dictee a un seul locuteur.
-
-### Murmure peut-il transcrire des fichiers audio ?
-
-Oui, via l'[API locale](features/api.md). Envoyez un fichier WAV a l'endpoint API.
 
 ## Installation
 
