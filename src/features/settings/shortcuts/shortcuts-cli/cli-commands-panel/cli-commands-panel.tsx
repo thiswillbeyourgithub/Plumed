@@ -2,10 +2,9 @@ import { Info, Terminal } from 'lucide-react';
 import { Trans } from 'react-i18next';
 import { Typography } from '@/components/typography';
 import { SettingsUI } from '@/components/settings-ui';
-import { ExternalLink } from '@/components/external-link';
 import { useTranslation } from '@/i18n';
 import { CliCommandRow } from './cli-command-row/cli-command-row';
-import { CLI_COMMANDS, CLI_DOC_URL } from './cli-commands-panel.helpers';
+import { CLI_COMMANDS } from './cli-commands-panel.helpers';
 
 export const CliCommandsPanel = () => {
     const { t } = useTranslation();
@@ -31,9 +30,6 @@ export const CliCommandsPanel = () => {
                             }}
                         />
                     </Typography.Paragraph>
-                    <ExternalLink href={CLI_DOC_URL} className="text-xs font-semibold">
-                        {t('Setup guide')}
-                    </ExternalLink>
                 </div>
             </div>
 

@@ -6,7 +6,7 @@ Fonctionnalités propres au fork Plumed, absentes de Murmure.
 
 Activée par défaut : **Personnaliser > Règles de formatage > Corriger les noms de médicaments et les termes médicaux**.
 
-Environ 40 000 règles intégrées corrigent les noms de médicaments et les termes médicaux que la reconnaissance vocale entend mal, par exemple « respéridone » devient « rispéridone » et « autorino la ringologie » devient « otorhinolaryngologie ». Ce sont les mêmes règles que le mode médical de [ParakeetWeb](http://parakeetweb.olicorne.org/?mode=med), appliquées en local, avant toutes les autres règles de formatage. Provenance et licence (CC BY 4.0) : [`src-tauri/medical-data/SOURCE.md`](../../src-tauri/medical-data/SOURCE.md).
+Environ 40 000 règles intégrées corrigent les noms de médicaments et les termes médicaux que la reconnaissance vocale entend mal, par exemple « respéridone » devient « rispéridone » et « autorino la ringologie » devient « otorhinolaryngologie ». Ce sont les mêmes règles que le mode médical de [ParakeetWeb](http://parakeetweb.olicorne.org/?mode=med), appliquées en local, avant toutes les autres règles de formatage. Provenance et licence (CC BY 4.0) : [`src-tauri/medical-data/SOURCE.md`](src-tauri/medical-data/SOURCE.md).
 
 Sous l'interrupteur, **Modifier les règles de médicaments et de termes médicaux** ouvre un panneau avancé :
 
@@ -28,7 +28,7 @@ Sur une installation existante (ou après les avoir supprimées), vous pouvez le
 1. Télécharger [`config.murmure`](https://framagit.org/interhop/murmure-regex/-/raw/main/config.murmure).
 2. Dans **Paramètres > Importer / Exporter**, importer ce fichier avec la stratégie **Fusionner**, pour garder vos propres règles (**Remplacer** les supprime). Les règles InterHop déjà présentes sont mises à jour, pas dupliquées.
 
-En ligne de commande : `murmure import config.murmure --strategy merge`.
+En ligne de commande : `plumed import config.murmure --strategy merge`.
 
 Attention : l'import, quelle que soit la stratégie, applique aussi les options intégrées d'InterHop (espace avant ? et !, conversion des nombres en chiffres en français, etc.). La correction des médicaments reste activée.
 
