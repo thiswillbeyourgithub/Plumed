@@ -229,21 +229,9 @@ jobs:
                   set -uo pipefail
                   arch -x86_64 sysctl -n machdep.cpu.brand_string machdep.cpu.features machdep.cpu.leaf7_features || true
 
-                  # `say` sometimes writes silent/empty audio on the runner: retry, and fail with a clear
-                  # message instead of a misleading "Transcription output is empty".
-                  # 16 kHz 16-bit mono = 32000 bytes/s, so 16000 bytes is 0.5 s of audio.
-                  for attempt in 1 2 3; do
-                    say -o "$RUNNER_TEMP/smoke.aiff" "This is a short test of the Plumed transcription engine."
-                    afconvert -f WAVE -d LEI16@16000 -c 1 "$RUNNER_TEMP/smoke.aiff" "$RUNNER_TEMP/smoke.wav"
-                    size=$(stat -f %z "$RUNNER_TEMP/smoke.wav" 2>/dev/null || echo 0)
-                    [ "$size" -ge 16000 ] && break
-                    echo "Attempt $attempt: test audio has only $size bytes, retrying"
-                    sleep 5
-                  done
-                  if [ "$size" -lt 16000 ]; then
-                    echo "::error::Text-to-speech produced empty test audio ($size bytes), runner issue, not an app bug"
-                    exit 1
-                  fi
+                  # Committed clip (espeak, "Ceci est un court test de dictée médicale.", 16 kHz mono):
+                  # `say` on the runners started writing empty audio, which made the test meaningless.
+                  cp .github/smoke/smoke-fr.wav "$RUNNER_TEMP/smoke.wav"
 
                   app=$(find src-tauri/target/x86_64-apple-darwin/release/bundle/macos -maxdepth 1 -name "*.app" | head -n 1)
                   if [ -z "$app" ]; then
