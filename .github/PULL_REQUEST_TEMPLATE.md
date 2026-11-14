@@ -19,7 +19,7 @@
 
 ## Checklist
 
-- [ ] I have read [CONTRIBUTING.md](/Kieirra/murmure/blob/main/CONTRIBUTING.md) and [GUIDELINES.md](/Kieirra/murmure/blob/main/GUIDELINES.md)
+- [ ] I have read [CONTRIBUTING.md](https://github.com/PlumedOrg/Plumed/blob/medmain/CONTRIBUTING.md) and [GUIDELINES.md](https://github.com/PlumedOrg/Plumed/blob/medmain/GUIDELINES.md)
 - [ ] My PR addresses **one single concern**
 - [ ] I tested my changes manually and they work as expected
 - [ ] I ran `cargo clippy` and `cargo fmt` (if Rust changes)

@@ -38,7 +38,7 @@ export const ImportPreview = ({ configData, fileName, isImporting, onImport, onC
         dictionary: 'replace',
     });
     const fileRules: FormattingRule[] = categories.formatting_rules?.rules ?? [];
-    const fileWords: string[] = Object.keys(categories.dictionary ?? {});
+    const fileWords: string[] = categories.dictionary ?? [];
 
     const disabledCategories = new Set<CategoryKey>(
         CATEGORY_DEFINITIONS.filter((def) => categories[def.key as keyof ExportedCategories] == null).map(

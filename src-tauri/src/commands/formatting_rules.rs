@@ -14,7 +14,13 @@ pub fn set_formatting_settings(
     app: AppHandle,
     settings: formatting_rules::FormattingSettings,
 ) -> Result<(), String> {
-    formatting_rules::save(&app, &settings)
+    let boosting_was = formatting_rules::load(&app).map(|s| s.built_in.phrase_boosting);
+    formatting_rules::save(&app, &settings)?;
+    let boosting = settings.built_in.phrase_boosting;
+    if boosting_was != Ok(boosting) {
+        crate::medical::phrase_list::apply_setting(&app, boosting);
+    }
+    Ok(())
 }
 
 #[command]

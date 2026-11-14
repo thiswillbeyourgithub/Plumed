@@ -30,6 +30,7 @@ Even if there is nothing new, update the date so we know the check happened.
 - Prefer **adding new files/modules** over editing upstream ones. Hook them into upstream code with the smallest possible change (one import, one call, one config entry).
 - Never reformat, reorder, rename or "clean up" upstream code we don't need to change: every touched line is a future merge conflict.
 - Never edit upstream docs other than `README.md` (fully replaced by ours) and the single pointer line at the top of `AGENTS.md`. Fork documentation goes in fork-specific files (this one, or new files).
+- Upstream's mkdocs site (`docs/`, `mkdocs.yml`, `overrides/`, the `docs.yml` workflow) is deleted: it documents Murmure (`murmure` commands, docs.murmure.app CNAME). When an upstream merge touches those files, keep the deletion. Plumed's user docs will live on plumed.fr; the medical features are documented in `MEDICAL.fr.md`.
 - Large data (medical regex lists, phrase boosting lists) goes in its own files, never inlined in upstream sources.
 - Generic improvements (performance, bug fixes, things any Murmure user benefits from) must be written so they can be sent upstream as is: no medical-specific code mixed in.
 

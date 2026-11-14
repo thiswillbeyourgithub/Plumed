@@ -95,6 +95,14 @@ pub fn load_tokenizer(tokenizer_path: Option<&std::path::Path>) -> Option<Tokeni
     }
 }
 
+/// Test helper: the bundled tokenizer is resolved at runtime via
+/// resolve_resource_path; in tests we load it relative to the crate manifest.
+#[cfg(test)]
+pub fn bundled_tokenizer() -> Option<Tokenizer> {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../resources/tokenizer.json");
+    Tokenizer::from_file(path).ok()
+}
+
 /// Per-word confidence: the minimum token probability (weakest link), with
 /// punctuation-only tokens excluded from the minimum.
 pub fn word_confidences(result: &TimestampedResult) -> Vec<(String, f32)> {
@@ -425,14 +433,6 @@ fn extract_segment_segments(utterance: &Utterance) -> Vec<TranscriptionSegment> 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    // The bundled tokenizer is a runtime resource resolved at runtime via
-    // resolve_resource_path; in tests we load it relative to the crate manifest.
-    fn bundled_tokenizer() -> Option<Tokenizer> {
-        let path =
-            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../resources/tokenizer.json");
-        Tokenizer::from_file(path).ok()
-    }
 
     #[test]
     fn tokenize_syntocinon_matches_bpe_ids() {

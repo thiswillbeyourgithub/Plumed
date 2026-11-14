@@ -2,8 +2,7 @@ import { Input } from '@/components/input';
 import { SettingsUI } from '@/components/settings-ui';
 import { Typography } from '@/components/typography';
 import { Switch } from '@/components/switch';
-import { ExternalLink } from '@/components/external-link';
-import { AlertTriangle, FileCode2 } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { useTranslation } from '@/i18n';
 
 interface RelaySettingsProps {
@@ -41,13 +40,6 @@ export const RelaySettings = ({
                     <Typography.Paragraph>
                         {t('Expose Smart Mic through a reverse proxy for external access')}
                     </Typography.Paragraph>
-                    <div className="flex items-center gap-1 text-xs">
-                        <FileCode2 className="w-4 h-4 text-muted-foreground" />
-                        {t('View')}{' '}
-                        <ExternalLink href="https://docs.murmure.app/features/smart-speech-mic/#remote-access">
-                            {t('remote access documentation')}
-                        </ExternalLink>
-                    </div>
                     {relayEnabled && (
                         <div className="flex items-center gap-1.5 text-xs text-yellow-300/90">
                             <AlertTriangle className="w-3 h-3 shrink-0" />

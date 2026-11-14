@@ -93,12 +93,7 @@ pub fn add_phrase_bonuses(
 mod tests {
     use super::list::DEFAULT_BOOST_MIN_P;
     use super::*;
-
-    fn bundled_tokenizer() -> Option<Tokenizer> {
-        let path =
-            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../resources/tokenizer.json");
-        Tokenizer::from_file(path).ok()
-    }
+    use crate::engine::helpers::bundled_tokenizer;
 
     fn bonuses_of(ids: Vec<i32>, logits: &[f32], blank_idx: i32) -> Vec<f32> {
         let trie = BoostingTrie::new(&[EncodedPhrase {

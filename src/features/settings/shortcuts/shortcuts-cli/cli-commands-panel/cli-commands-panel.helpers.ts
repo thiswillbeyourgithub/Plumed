@@ -11,5 +11,3 @@ export const CLI_COMMANDS: CliCommandDescriptor[] = [
     { id: 'cancel', label: 'Cancel recording', command: 'plumed --cancel' },
     { id: 'voice-mode', label: 'Toggle Voice Mode', command: 'plumed --voice-mode' },
 ];
-
-export const CLI_DOC_URL = 'https://docs.murmure.app/configure-shortcuts-on-linux/';

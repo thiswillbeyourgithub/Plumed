@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { Input } from '@/components/input';
 import { Page } from '@/components/page';
-import { ExternalLink } from '@/components/external-link';
 import { InternalLink } from '@/components/internal-link';
 import { useTranslation } from '@/i18n';
 
@@ -64,10 +63,7 @@ export const DictionaryToolbar = ({ onAdd }: DictionaryToolbarProps) => {
                         <InternalLink to="/personalize/formatting-rules" hash="custom-rules">
                             {t('Formatting Rules')}
                         </InternalLink>{' '}
-                        {t('to handle words with digits.')}{' '}
-                        <ExternalLink href="https://docs.murmure.app/features/formatting-rules/">
-                            {t('Learn more')}
-                        </ExternalLink>
+                        {t('to handle words with digits.')}
                     </span>
                 </div>
             )}
