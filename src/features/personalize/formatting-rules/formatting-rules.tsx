@@ -153,6 +153,24 @@ export const FormattingRules = () => {
                         <SettingsUI.Container>
                             <SettingsUI.Item>
                                 <SettingsUI.Description className="w-150">
+                                    <Typography.Title>{t('Boost medical vocabulary')}</Typography.Title>
+                                    <Typography.Paragraph>
+                                        {t(
+                                            'Helps the model recognize about 77,000 French medical words and phrases while you speak.'
+                                        )}
+                                    </Typography.Paragraph>
+                                </SettingsUI.Description>
+                                <Switch
+                                    checked={settings.built_in.phrase_boosting}
+                                    onCheckedChange={(checked) => updateBuiltInOption('phrase_boosting', checked)}
+                                    data-testid="option-phrase-boosting"
+                                />
+                            </SettingsUI.Item>
+                        </SettingsUI.Container>
+
+                        <SettingsUI.Container>
+                            <SettingsUI.Item>
+                                <SettingsUI.Description className="w-150">
                                     <Typography.Title>{t('Short text correction')}</Typography.Title>
                                     <Typography.Paragraph>
                                         {shortTextThreshold > 0 ? (

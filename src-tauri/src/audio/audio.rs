@@ -360,7 +360,7 @@ pub fn preload_engine(app: &AppHandle) -> Result<()> {
 
         let mut new_engine = ParakeetEngine::load_int8(&model_path, model.get_tokenizer_path())
             .map_err(|e| anyhow::anyhow!("Failed to load model: {}", e))?;
-        crate::medical::phrase_list::arm(&mut new_engine);
+        crate::medical::phrase_list::arm(app, &mut new_engine);
 
         *engine = Some(new_engine);
         info!("Model loaded and cached in memory");

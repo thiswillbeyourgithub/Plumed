@@ -94,6 +94,8 @@ pub struct BuiltInOptions {
     pub text_numbers_threshold: f64,
     /// Plumed: fix French drug names and medical terms (bundled rules)
     pub medical_fixes: bool,
+    /// Plumed: boost the bundled French medical phrase list while decoding
+    pub phrase_boosting: bool,
 }
 
 impl Default for BuiltInOptions {
@@ -106,6 +108,7 @@ impl Default for BuiltInOptions {
             text_numbers_language: "en".to_string(),
             text_numbers_threshold: 0.0,
             medical_fixes: true,
+            phrase_boosting: true,
         }
     }
 }

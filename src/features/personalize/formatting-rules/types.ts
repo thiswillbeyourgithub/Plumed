@@ -17,6 +17,7 @@ export interface BuiltInOptions {
     text_numbers_language: string;
     text_numbers_threshold: number;
     medical_fixes: boolean;
+    phrase_boosting: boolean;
 }
 
 export interface FormattingSettings {
@@ -33,6 +34,7 @@ export const defaultFormattingSettings: FormattingSettings = {
         text_numbers_language: 'en',
         text_numbers_threshold: 0,
         medical_fixes: true,
+        phrase_boosting: true,
     },
     rules: [],
 };
